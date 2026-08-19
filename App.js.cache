@@ -1,0 +1,4927 @@
+__d(function (global, require, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, _dependencyMap) {
+  "use strict";
+
+  var _jsxFileName = "C:\\zarno-kassa\\App.js",
+    _s = $RefreshSig$(),
+    _s2 = $RefreshSig$();
+  /* =========================================================
+     ZARNO KASSA
+     Supabase + React Native / Expo
+     ========================================================= */
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
+  function _interopDefault(e) {
+    return e && e.__esModule ? e : {
+      default: e
+    };
+  }
+  Object.defineProperty(exports, "default", {
+    enumerable: true,
+    get: function () {
+      return App;
+    }
+  });
+  var _react = require(_dependencyMap[0], "react");
+  var _reactNativeWebDistExportsAlert = require(_dependencyMap[1], "react-native-web/dist/exports/Alert");
+  var Alert = _interopDefault(_reactNativeWebDistExportsAlert);
+  var _reactNativeWebDistExportsKeyboardAvoidingView = require(_dependencyMap[2], "react-native-web/dist/exports/KeyboardAvoidingView");
+  var KeyboardAvoidingView = _interopDefault(_reactNativeWebDistExportsKeyboardAvoidingView);
+  var _reactNativeWebDistExportsModal = require(_dependencyMap[3], "react-native-web/dist/exports/Modal");
+  var Modal = _interopDefault(_reactNativeWebDistExportsModal);
+  var _reactNativeWebDistExportsPlatform = require(_dependencyMap[4], "react-native-web/dist/exports/Platform");
+  var Platform = _interopDefault(_reactNativeWebDistExportsPlatform);
+  var _reactNativeWebDistExportsSafeAreaView = require(_dependencyMap[5], "react-native-web/dist/exports/SafeAreaView");
+  var SafeAreaView = _interopDefault(_reactNativeWebDistExportsSafeAreaView);
+  var _reactNativeWebDistExportsScrollView = require(_dependencyMap[6], "react-native-web/dist/exports/ScrollView");
+  var ScrollView = _interopDefault(_reactNativeWebDistExportsScrollView);
+  var _reactNativeWebDistExportsStatusBar = require(_dependencyMap[7], "react-native-web/dist/exports/StatusBar");
+  var StatusBar = _interopDefault(_reactNativeWebDistExportsStatusBar);
+  var _reactNativeWebDistExportsStyleSheet = require(_dependencyMap[8], "react-native-web/dist/exports/StyleSheet");
+  var StyleSheet = _interopDefault(_reactNativeWebDistExportsStyleSheet);
+  var _reactNativeWebDistExportsText = require(_dependencyMap[9], "react-native-web/dist/exports/Text");
+  var Text = _interopDefault(_reactNativeWebDistExportsText);
+  var _reactNativeWebDistExportsTextInput = require(_dependencyMap[10], "react-native-web/dist/exports/TextInput");
+  var TextInput = _interopDefault(_reactNativeWebDistExportsTextInput);
+  var _reactNativeWebDistExportsTouchableOpacity = require(_dependencyMap[11], "react-native-web/dist/exports/TouchableOpacity");
+  var TouchableOpacity = _interopDefault(_reactNativeWebDistExportsTouchableOpacity);
+  var _reactNativeWebDistExportsView = require(_dependencyMap[12], "react-native-web/dist/exports/View");
+  var View = _interopDefault(_reactNativeWebDistExportsView);
+  var _expoVectorIcons = require(_dependencyMap[13], "@expo/vector-icons");
+  var _reactNativeAsyncStorageAsyncStorage = require(_dependencyMap[14], "@react-native-async-storage/async-storage");
+  var AsyncStorage = _interopDefault(_reactNativeAsyncStorageAsyncStorage);
+  var _supabaseSupabaseJs = require(_dependencyMap[15], "@supabase/supabase-js");
+  var _reactJsxDevRuntime = require(_dependencyMap[16], "react/jsx-dev-runtime");
+  const SUPABASE_URL = "https://jniqyvpnwibvtptzpvgc.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_CeVF6nkRmc_SVpmhp-_Efg_oLvwvqcH";
+  const supabase = (0, _supabaseSupabaseJs.createClient)(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      storage: AsyncStorage.default,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false
+    }
+  });
+
+  /* =========================================================
+     COLORS
+     ========================================================= */
+
+  const COLORS = {
+    bg: "#061521",
+    bg2: "#091B29",
+    card: "#10283A",
+    card2: "#143247",
+    border: "#27475B",
+    gold: "#D9A735",
+    goldLight: "#F3C95C",
+    white: "#FFFFFF",
+    text: "#EAF2F7",
+    muted: "#8FA8B9",
+    green: "#35CF91",
+    red: "#F16A72",
+    orange: "#F0A252",
+    blue: "#5BA7FF"
+  };
+  const LOW_LIMIT = 2;
+
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+
+  const money = value => {
+    const number = Number(value || 0);
+    return `${number.toLocaleString("uz-UZ")} so'm`;
+  };
+  const numberOnly = value => String(value ?? "").replace(/\D/g, "");
+  const parseNumber = value => {
+    const n = Number(String(value ?? "").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const safeText = value => String(value ?? "").trim();
+  const todayKey = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const normalizeProduct = item => ({
+    ...item,
+    cost: Number(item.cost || 0),
+    price: Number(item.price || 0),
+    quantity: Number(item.quantity || 0)
+  });
+  const normalizeSaleItem = item => ({
+    ...item,
+    quantity: Number(item.quantity || 0),
+    cost: Number(item.cost || 0),
+    sale_price: Number(item.sale_price || 0),
+    total: Number(item.total || 0)
+  });
+
+  /* =========================================================
+     SMALL UI COMPONENTS
+     ========================================================= */
+
+  function Icon({
+    name,
+    size = 21,
+    color = COLORS.goldLight
+  }) {
+    return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(_expoVectorIcons.Ionicons, {
+      name: name,
+      size: size,
+      color: color
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 122,
+      columnNumber: 10
+    }, this);
+  }
+  _c = Icon;
+  function SectionTitle({
+    title,
+    subtitle,
+    right
+  }) {
+    return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+      style: styles.sectionHeader,
+      children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+        style: {
+          flex: 1
+        },
+        children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+          style: styles.sectionTitle,
+          children: title
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 129,
+          columnNumber: 9
+        }, this), subtitle ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+          style: styles.sectionSubtitle,
+          children: subtitle
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 131,
+          columnNumber: 11
+        }, this) : null]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 128,
+        columnNumber: 7
+      }, this), right ? right : null]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 127,
+      columnNumber: 5
+    }, this);
+  }
+  _c2 = SectionTitle;
+  function StatCard({
+    label,
+    value,
+    color = COLORS.white,
+    small = false
+  }) {
+    return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+      style: small ? styles.statCardSmall : styles.statCard,
+      children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+        style: styles.statLabel,
+        children: label
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 148,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+        style: [small ? styles.statValueSmall : styles.statValue, {
+          color
+        }],
+        children: value
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 149,
+        columnNumber: 7
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 147,
+      columnNumber: 5
+    }, this);
+  }
+  _c3 = StatCard;
+  function EmptyState({
+    icon = "cube-outline",
+    title = "Ma'lumot yo'q",
+    text = ""
+  }) {
+    return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+      style: styles.emptyBox,
+      children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+        style: styles.emptyIcon,
+        children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+          name: icon,
+          size: 34,
+          color: COLORS.blue
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 169,
+          columnNumber: 9
+        }, this)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 168,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+        style: styles.emptyTitle,
+        children: title
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 176,
+        columnNumber: 7
+      }, this), text ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+        style: styles.emptyText,
+        children: text
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 179,
+        columnNumber: 9
+      }, this) : null]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 167,
+      columnNumber: 5
+    }, this);
+  }
+  _c4 = EmptyState;
+  function PrimaryButton({
+    title,
+    onPress,
+    icon = "add",
+    disabled = false,
+    danger = false
+  }) {
+    return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+      disabled: disabled,
+      onPress: onPress,
+      style: [styles.primaryButton, danger && {
+        backgroundColor: COLORS.red
+      }, disabled && {
+        opacity: 0.45
+      }],
+      children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+        name: icon,
+        size: 19,
+        color: danger ? COLORS.white : COLORS.bg
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 206,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+        style: [styles.primaryButtonText, danger && {
+          color: COLORS.white
+        }],
+        children: title
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 212,
+        columnNumber: 7
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 193,
+      columnNumber: 5
+    }, this);
+  }
+
+  /* =========================================================
+     AUTH SCREEN
+     ========================================================= */
+  _c5 = PrimaryButton;
+  function AuthScreen() {
+    _s();
+    const [mode, setMode] = (0, _react.useState)("login");
+    const [email, setEmail] = (0, _react.useState)("");
+    const [password, setPassword] = (0, _react.useState)("");
+    const [busy, setBusy] = (0, _react.useState)(false);
+    const [message, setMessage] = (0, _react.useState)("");
+    const isRegister = mode === "register";
+    const handleAuth = async () => {
+      const cleanEmail = safeText(email).toLowerCase();
+      const cleanPassword = password;
+      setMessage("");
+      if (!cleanEmail || !cleanEmail.includes("@")) {
+        setMessage("To'g'ri email manzil kiriting.");
+        return;
+      }
+      if (cleanPassword.length < 8) {
+        setMessage("Parol kamida 8 ta belgidan iborat bo'lsin.");
+        return;
+      }
+      setBusy(true);
+      try {
+        if (isRegister) {
+          const {
+            data,
+            error
+          } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password: cleanPassword
+          });
+          if (error) {
+            setMessage(error.message);
+            return;
+          }
+          if (data?.session) {
+            setMessage("Akkaunt yaratildi.");
+          } else {
+            setMessage("Akkaunt yaratildi. Emailingizni tasdiqlang, keyin Kassa'ga kiring.");
+          }
+        } else {
+          const {
+            data,
+            error
+          } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password: cleanPassword
+          });
+          if (error) {
+            setMessage(error.message);
+            return;
+          }
+          if (data?.session) {
+            setMessage("");
+          }
+        }
+      } catch (error) {
+        setMessage(error?.message || "Kutilmagan xatolik yuz berdi.");
+      } finally {
+        setBusy(false);
+      }
+    };
+    return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SafeAreaView.default, {
+      style: styles.safe,
+      children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatusBar.default, {
+        barStyle: "light-content",
+        backgroundColor: COLORS.bg
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 306,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(KeyboardAvoidingView.default, {
+        behavior: Platform.default.OS === "ios" ? "padding" : undefined,
+        style: {
+          flex: 1
+        },
+        children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+          contentContainerStyle: styles.authContainer,
+          keyboardShouldPersistTaps: "handled",
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.authLogoWrap,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.logo,
+              children: "ZARNO"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 324,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.authBrand,
+              children: "Kassa"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 325,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.authTagline,
+              children: "Savdoni boshqaring. Foydani nazorat qiling."
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 328,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 323,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.authCard,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.authTitle,
+              children: isRegister ? "Yangi akkaunt" : "Kirish"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 334,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.authSubtitle,
+              children: isRegister ? "ZARNO Kassa uchun akkaunt yarating" : "Davom etish uchun akkauntingizga kiring"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 340,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+              value: email,
+              onChangeText: setEmail,
+              placeholder: "Email",
+              placeholderTextColor: COLORS.muted,
+              keyboardType: "email-address",
+              autoCapitalize: "none",
+              autoCorrect: false,
+              style: styles.input
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 346,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+              value: password,
+              onChangeText: setPassword,
+              placeholder: "Parol",
+              placeholderTextColor: COLORS.muted,
+              secureTextEntry: true,
+              autoCapitalize: "none",
+              style: styles.input
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 357,
+              columnNumber: 13
+            }, this), message ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.authMessage,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                name: message.includes("xato") || message.includes("error") || message.includes("invalid") ? "alert-circle-outline" : "information-circle-outline",
+                size: 18,
+                color: COLORS.goldLight
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 369,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.authMessageText,
+                children: message
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 381,
+                columnNumber: 17
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 368,
+              columnNumber: 15
+            }, this) : null, /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+              onPress: handleAuth,
+              disabled: busy,
+              style: [styles.authButton, busy && {
+                opacity: 0.55
+              }],
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.authButtonText,
+                children: busy ? "Kutilmoqda..." : isRegister ? "Ro'yxatdan o'tish" : "Kirish"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 395,
+                columnNumber: 15
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 387,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+              onPress: () => {
+                setMode(isRegister ? "login" : "register");
+                setMessage("");
+              },
+              style: styles.authSwitch,
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.authSwitchText,
+                children: isRegister ? "Akkauntingiz bormi? Kirish" : "Akkauntingiz yo'qmi? Ro'yxatdan o'tish"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 415,
+                columnNumber: 15
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 404,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 333,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 319,
+          columnNumber: 9
+        }, this)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 311,
+        columnNumber: 7
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 305,
+      columnNumber: 5
+    }, this);
+  }
+
+  /* =========================================================
+     MAIN APP
+     ========================================================= */
+  _s(AuthScreen, "nB+e+nheElm5X4fUz/m4ZePkGAk=");
+  _c6 = AuthScreen;
+  function App() {
+    _s2();
+    const [session, setSession] = (0, _react.useState)(null);
+    const [authLoading, setAuthLoading] = (0, _react.useState)(true);
+    const [loading, setLoading] = (0, _react.useState)(false);
+    const [page, setPage] = (0, _react.useState)("kassa");
+    const [products, setProducts] = (0, _react.useState)([]);
+    const [categories, setCategories] = (0, _react.useState)([]);
+    const [sales, setSales] = (0, _react.useState)([]);
+    const [saleItems, setSaleItems] = (0, _react.useState)([]);
+    const [expenses, setExpenses] = (0, _react.useState)([]);
+    const [search, setSearch] = (0, _react.useState)("");
+    const [warehouseSearch, setWarehouseSearch] = (0, _react.useState)("");
+    const [cart, setCart] = (0, _react.useState)([]);
+    const [productModal, setProductModal] = (0, _react.useState)(false);
+    const [categoryModal, setCategoryModal] = (0, _react.useState)(false);
+    const [expenseModal, setExpenseModal] = (0, _react.useState)(false);
+    const [receiptModal, setReceiptModal] = (0, _react.useState)(false);
+    const [editingProduct, setEditingProduct] = (0, _react.useState)(null);
+    const [busyAction, setBusyAction] = (0, _react.useState)(false);
+    const [receipt, setReceipt] = (0, _react.useState)(null);
+
+    /* PRODUCT FORM */
+    const [productName, setProductName] = (0, _react.useState)("");
+    const [productCost, setProductCost] = (0, _react.useState)("");
+    const [productPrice, setProductPrice] = (0, _react.useState)("");
+    const [productQuantity, setProductQuantity] = (0, _react.useState)("");
+    const [productAddStock, setProductAddStock] = (0, _react.useState)("");
+    const [productCategoryId, setProductCategoryId] = (0, _react.useState)("");
+
+    /* CATEGORY FORM */
+    const [categoryName, setCategoryName] = (0, _react.useState)("");
+
+    /* EXPENSE FORM */
+    const [expenseTitle, setExpenseTitle] = (0, _react.useState)("");
+    const [expenseAmount, setExpenseAmount] = (0, _react.useState)("");
+    const [expenseNote, setExpenseNote] = (0, _react.useState)("");
+
+    /* =========================================================
+       AUTH SESSION
+       ========================================================= */
+
+    (0, _react.useEffect)(() => {
+      let mounted = true;
+      const loadSession = async () => {
+        try {
+          const {
+            data,
+            error
+          } = await supabase.auth.getSession();
+          if (error) {
+            console.log("SESSION ERROR:", error.message);
+          }
+          if (mounted) {
+            setSession(data?.session || null);
+            setAuthLoading(false);
+          }
+        } catch (error) {
+          if (mounted) {
+            setSession(null);
+            setAuthLoading(false);
+          }
+        }
+      };
+      loadSession();
+      const {
+        data: authListener
+      } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        setSession(nextSession || null);
+      });
+      return () => {
+        mounted = false;
+        authListener?.subscription?.unsubscribe();
+      };
+    }, []);
+
+    /* =========================================================
+       LOAD DATA
+       ========================================================= */
+
+    const loadAll = async () => {
+      if (!session?.user?.id) return;
+      setLoading(true);
+      try {
+        const [productsResult, categoriesResult, salesResult, saleItemsResult, expensesResult] = await Promise.all([supabase.from("products").select("*").order("created_at", {
+          ascending: false
+        }), supabase.from("categories").select("*").order("name", {
+          ascending: true
+        }), supabase.from("sales").select("*").order("created_at", {
+          ascending: false
+        }), supabase.from("sale_items").select("*").order("created_at", {
+          ascending: false
+        }), supabase.from("expenses").select("*").order("created_at", {
+          ascending: false
+        })]);
+        const errors = [productsResult.error, categoriesResult.error, salesResult.error, saleItemsResult.error, expensesResult.error].filter(Boolean);
+        if (errors.length) {
+          throw new Error(errors.map(item => item.message).join("\n"));
+        }
+        setProducts((productsResult.data || []).map(normalizeProduct));
+        setCategories(categoriesResult.data || []);
+        setSales(salesResult.data || []);
+        setSaleItems((saleItemsResult.data || []).map(normalizeSaleItem));
+        setExpenses(expensesResult.data || []);
+      } catch (error) {
+        Alert.default.alert("Ma'lumotlarni yuklashda xato", error?.message || "Supabase bilan aloqa amalga oshmadi.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    (0, _react.useEffect)(() => {
+      if (session?.user?.id) {
+        loadAll();
+      } else {
+        setProducts([]);
+        setCategories([]);
+        setSales([]);
+        setSaleItems([]);
+        setExpenses([]);
+        setCart([]);
+      }
+    }, [session?.user?.id]);
+
+    /* =========================================================
+       CALCULATIONS
+       ========================================================= */
+
+    const filteredProducts = (0, _react.useMemo)(() => {
+      const query = search.trim().toLowerCase();
+      if (!query) return products;
+      return products.filter(item => String(item.name || "").toLowerCase().includes(query));
+    }, [products, search]);
+    const filteredWarehouseProducts = (0, _react.useMemo)(() => {
+      const query = warehouseSearch.trim().toLowerCase();
+      if (!query) return products;
+      return products.filter(item => String(item.name || "").toLowerCase().includes(query));
+    }, [products, warehouseSearch]);
+    const cartTotal = (0, _react.useMemo)(() => cart.reduce((sum, item) => sum + Number(item.salePrice || 0) * Number(item.quantity || 0), 0), [cart]);
+    const cartCost = (0, _react.useMemo)(() => cart.reduce((sum, item) => sum + Number(item.cost || 0) * Number(item.quantity || 0), 0), [cart]);
+    const cartProfit = cartTotal - cartCost;
+    const warehouseCostTotal = (0, _react.useMemo)(() => products.reduce((sum, item) => sum + Number(item.cost || 0) * Number(item.quantity || 0), 0), [products]);
+    const warehouseRetailTotal = (0, _react.useMemo)(() => products.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0), [products]);
+    const lowProducts = (0, _react.useMemo)(() => products.filter(item => Number(item.quantity || 0) > 0 && Number(item.quantity || 0) <= LOW_LIMIT), [products]);
+    const outProducts = (0, _react.useMemo)(() => products.filter(item => Number(item.quantity || 0) <= 0), [products]);
+    const totalSales = (0, _react.useMemo)(() => sales.reduce((sum, sale) => sum + Number(sale.total || 0), 0), [sales]);
+    const totalCost = (0, _react.useMemo)(() => sales.reduce((sum, sale) => sum + Number(sale.cost_total || 0), 0), [sales]);
+    const grossProfit = (0, _react.useMemo)(() => sales.reduce((sum, sale) => sum + Number(sale.profit || 0), 0), [sales]);
+    const totalExpenses = (0, _react.useMemo)(() => expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0), [expenses]);
+    const netProfit = grossProfit - totalExpenses;
+
+    /* =========================================================
+       TOP / WORST SELLERS
+       ========================================================= */
+
+    const sellingStats = (0, _react.useMemo)(() => {
+      const map = {};
+      saleItems.forEach(item => {
+        const id = item.product_id || `name:${item.product_name}`;
+        if (!map[id]) {
+          map[id] = {
+            productId: item.product_id || null,
+            name: item.product_name || "Noma'lum",
+            quantity: 0,
+            revenue: 0,
+            profit: 0
+          };
+        }
+        map[id].quantity += Number(item.quantity || 0);
+        map[id].revenue += Number(item.total || 0);
+        map[id].profit += (Number(item.sale_price || 0) - Number(item.cost || 0)) * Number(item.quantity || 0);
+      });
+      return Object.values(map);
+    }, [saleItems]);
+    const bestSelling = (0, _react.useMemo)(() => [...sellingStats].sort((a, b) => b.quantity - a.quantity).slice(0, 5), [sellingStats]);
+    const sellingMap = (0, _react.useMemo)(() => {
+      const map = {};
+      sellingStats.forEach(item => {
+        if (item.productId) {
+          map[item.productId] = item.quantity;
+        }
+      });
+      return map;
+    }, [sellingStats]);
+    const notSelling = (0, _react.useMemo)(() => products.map(product => ({
+      product,
+      sold: sellingMap[product.id] || 0
+    })).sort((a, b) => a.sold - b.sold).slice(0, 5), [products, sellingMap]);
+
+    /* =========================================================
+       PRODUCT MODAL
+       ========================================================= */
+
+    const openAddProduct = () => {
+      setEditingProduct(null);
+      setProductName("");
+      setProductCost("");
+      setProductPrice("");
+      setProductQuantity("");
+      setProductAddStock("");
+      setProductCategoryId(categories[0]?.id || "");
+      setProductModal(true);
+    };
+    const openEditProduct = product => {
+      setEditingProduct(product);
+      setProductName(product.name || "");
+      setProductCost(String(product.cost || ""));
+      setProductPrice(String(product.price || ""));
+      setProductQuantity(String(product.quantity || 0));
+      setProductAddStock("");
+      setProductCategoryId(product.category_id || "");
+      setProductModal(true);
+    };
+    const saveProduct = async () => {
+      if (!session?.user?.id) {
+        Alert.default.alert("Kirish kerak", "Avval akkauntga kiring.");
+        return;
+      }
+      const name = safeText(productName);
+      const cost = parseNumber(productCost);
+      const price = parseNumber(productPrice);
+      const initialQuantity = Math.max(0, parseNumber(productQuantity));
+      const addStock = Math.max(0, parseNumber(productAddStock));
+      if (!name) {
+        Alert.default.alert("Tovar nomi", "Tovar nomini kiriting.");
+        return;
+      }
+      if (cost < 0 || price < 0) {
+        Alert.default.alert("Narx", "Narxlar manfiy bo'lmasligi kerak.");
+        return;
+      }
+      setBusyAction(true);
+      try {
+        if (editingProduct) {
+          const nextQuantity = initialQuantity + addStock;
+          const {
+            data,
+            error
+          } = await supabase.from("products").update({
+            name,
+            category_id: productCategoryId || null,
+            cost,
+            price,
+            quantity: nextQuantity,
+            updated_at: new Date().toISOString()
+          }).eq("id", editingProduct.id).eq("user_id", session.user.id).select().single();
+          if (error) throw error;
+          setProducts(old => old.map(item => item.id === editingProduct.id ? normalizeProduct(data) : item));
+        } else {
+          const {
+            data,
+            error
+          } = await supabase.from("products").insert({
+            user_id: session.user.id,
+            category_id: productCategoryId || null,
+            name,
+            cost,
+            price,
+            quantity: initialQuantity
+          }).select().single();
+          if (error) throw error;
+          setProducts(old => [normalizeProduct(data), ...old]);
+        }
+        setProductModal(false);
+        setEditingProduct(null);
+        setProductName("");
+        setProductCost("");
+        setProductPrice("");
+        setProductQuantity("");
+        setProductAddStock("");
+        setProductCategoryId("");
+      } catch (error) {
+        Alert.default.alert("Tovarni saqlashda xato", error?.message || "Xatolik yuz berdi.");
+      } finally {
+        setBusyAction(false);
+      }
+    };
+    const deleteProduct = async product => {
+      try {
+        if (!session?.user?.id) {
+          throw new Error("Avval akkauntga kiring.");
+        }
+        const {
+          data: deletedRows,
+          error
+        } = await supabase.from("products").delete().eq("id", product.id).eq("user_id", session.user.id).select("id");
+        if (error) throw error;
+        if (!deletedRows || deletedRows.length === 0) {
+          throw new Error("Mahsulot bazadan o‘chirilmadi.");
+        }
+        setProducts(old => old.filter(item => item.id !== product.id));
+        setCart(old => old.filter(item => item.productId !== product.id));
+      } catch (error) {
+        Alert.default.alert("Xatolik", error?.message || "Tovar o‘chirilmadi.");
+      }
+    };
+
+    /* =========================================================
+       CATEGORIES
+       ========================================================= */
+
+    const addCategory = async () => {
+      const name = safeText(categoryName);
+      if (!name) {
+        Alert.default.alert("Kategoriya", "Kategoriya nomini kiriting.");
+        return;
+      }
+      try {
+        const {
+          data,
+          error
+        } = await supabase.from("categories").insert({
+          user_id: session.user.id,
+          name
+        }).select().single();
+        if (error) throw error;
+        setCategories(old => [...old, data].sort((a, b) => String(a.name).localeCompare(String(b.name))));
+        setCategoryName("");
+      } catch (error) {
+        Alert.default.alert("Kategoriya xatosi", error?.message || "Kategoriya qo'shilmadi.");
+      }
+    };
+    const deleteCategory = category => {
+      Alert.default.alert("Kategoriyani o'chirish", `"${category.name}" o'chirilsinmi?`, [{
+        text: "Bekor",
+        style: "cancel"
+      }, {
+        text: "O'chirish",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const {
+              error
+            } = await supabase.from("categories").delete().eq("id", category.id).eq("user_id", session.user.id);
+            if (error) throw error;
+            setCategories(old => old.filter(item => item.id !== category.id));
+            setProducts(old => old.map(item => item.category_id === category.id ? {
+              ...item,
+              category_id: null
+            } : item));
+            setProductCategoryId("");
+          } catch (error) {
+            Alert.default.alert("Xatolik", error?.message || "Kategoriya o'chirilmadi.");
+          }
+        }
+      }]);
+    };
+
+    /* =========================================================
+       CART
+       ========================================================= */
+
+    const addToCart = product => {
+      if (Number(product.quantity || 0) <= 0) {
+        Alert.default.alert("Omborda yo'q", `"${product.name}" qolmagan.`);
+        return;
+      }
+      setCart(old => {
+        const existing = old.find(item => item.productId === product.id);
+        if (existing) {
+          if (existing.quantity >= product.quantity) {
+            Alert.default.alert("Qoldiq cheklovi", "Ombordagi qoldiqdan ortiq sotib bo'lmaydi.");
+            return old;
+          }
+          return old.map(item => item.productId === product.id ? {
+            ...item,
+            quantity: item.quantity + 1
+          } : item);
+        }
+        return [...old, {
+          productId: product.id,
+          name: product.name,
+          cost: Number(product.cost || 0),
+          stock: Number(product.quantity || 0),
+          salePrice: Number(product.price || 0),
+          quantity: 1
+        }];
+      });
+    };
+    const changeCartQuantity = (productId, delta) => {
+      setCart(old => old.map(item => {
+        if (item.productId !== productId) {
+          return item;
+        }
+        const product = products.find(p => p.id === productId);
+        const stock = Number(product?.quantity ?? item.stock ?? 0);
+        const next = item.quantity + delta;
+        if (next <= 0) {
+          return null;
+        }
+        if (next > stock) {
+          Alert.default.alert("Qoldiq cheklovi", `Maksimal ${stock} dona sotishingiz mumkin.`);
+          return {
+            ...item,
+            quantity: stock
+          };
+        }
+        return {
+          ...item,
+          quantity: next
+        };
+      }).filter(Boolean));
+    };
+    const removeFromCart = productId => {
+      setCart(old => old.filter(item => item.productId !== productId));
+    };
+    const changeSalePrice = (productId, value) => {
+      setCart(old => old.map(item => item.productId === productId ? {
+        ...item,
+        salePrice: Math.max(0, parseNumber(value))
+      } : item));
+    };
+
+    /* =========================================================
+       COMPLETE SALE
+       ========================================================= */
+
+    const completeSale = async () => {
+      if (!session?.user?.id) {
+        Alert.default.alert("Kirish kerak", "Avval akkauntga kiring.");
+        return;
+      }
+      if (cart.length === 0) {
+        Alert.default.alert("Savat bo'sh", "Sotish uchun tovar qo'shing.");
+        return;
+      }
+      setBusyAction(true);
+      try {
+        /* Re-check stock from database */
+        const ids = cart.map(item => item.productId);
+        const {
+          data: freshProducts,
+          error: stockError
+        } = await supabase.from("products").select("*").in("id", ids).eq("user_id", session.user.id);
+        if (stockError) {
+          throw stockError;
+        }
+        for (const cartItem of cart) {
+          const current = (freshProducts || []).find(item => item.id === cartItem.productId);
+          if (!current) {
+            throw new Error(`"${cartItem.name}" topilmadi.`);
+          }
+          if (Number(current.quantity || 0) < Number(cartItem.quantity || 0)) {
+            throw new Error(`"${cartItem.name}" qoldig'i yetarli emas. Qoldiq: ${current.quantity}`);
+          }
+        }
+        const total = cart.reduce((sum, item) => sum + Number(item.salePrice || 0) * Number(item.quantity || 0), 0);
+        const costTotal = cart.reduce((sum, item) => sum + Number(item.cost || 0) * Number(item.quantity || 0), 0);
+        const profit = total - costTotal;
+
+        /* Create sale header */
+        const {
+          data: sale,
+          error: saleError
+        } = await supabase.from("sales").insert({
+          user_id: session.user.id,
+          total,
+          cost_total: costTotal,
+          profit
+        }).select().single();
+        if (saleError) {
+          throw saleError;
+        }
+
+        /* Create sale items */
+        const itemsPayload = cart.map(item => ({
+          sale_id: sale.id,
+          user_id: session.user.id,
+          product_id: item.productId,
+          product_name: item.name,
+          quantity: Number(item.quantity || 0),
+          cost: Number(item.cost || 0),
+          sale_price: Number(item.salePrice || 0),
+          total: Number(item.salePrice || 0) * Number(item.quantity || 0)
+        }));
+        const {
+          error: itemsError
+        } = await supabase.from("sale_items").insert(itemsPayload);
+        if (itemsError) {
+          throw itemsError;
+        }
+
+        /* Update stock */
+        for (const cartItem of cart) {
+          const current = (freshProducts || []).find(item => item.id === cartItem.productId);
+          const nextQuantity = Number(current.quantity || 0) - Number(cartItem.quantity || 0);
+          const {
+            error
+          } = await supabase.from("products").update({
+            quantity: Math.max(0, nextQuantity),
+            updated_at: new Date().toISOString()
+          }).eq("id", cartItem.productId).eq("user_id", session.user.id);
+          if (error) throw error;
+        }
+        const receiptData = {
+          id: sale.id,
+          created_at: sale.created_at,
+          items: cart.map(item => ({
+            ...item,
+            total: Number(item.salePrice || 0) * Number(item.quantity || 0)
+          })),
+          total,
+          costTotal,
+          profit
+        };
+        setReceipt(receiptData);
+        setReceiptModal(true);
+        setCart([]);
+        await loadAll();
+      } catch (error) {
+        Alert.default.alert("Sotuv xatosi", error?.message || "Sotuvni yakunlashda xato yuz berdi.");
+      } finally {
+        setBusyAction(false);
+      }
+    };
+
+    /* =========================================================
+       EXPENSES
+       ========================================================= */
+
+    const saveExpense = async () => {
+      const title = safeText(expenseTitle);
+      const amount = parseNumber(expenseAmount);
+      const note = safeText(expenseNote);
+      if (!title) {
+        Alert.default.alert("Xarajat", "Nimaga xarajat qilinganini yozing.");
+        return;
+      }
+      if (amount <= 0) {
+        Alert.default.alert("Xarajat", "Xarajat summasini kiriting.");
+        return;
+      }
+      try {
+        const {
+          data,
+          error
+        } = await supabase.from("expenses").insert({
+          user_id: session.user.id,
+          title,
+          amount,
+          note: note || null
+        }).select().single();
+        if (error) throw error;
+        setExpenses(old => [data, ...old]);
+        setExpenseTitle("");
+        setExpenseAmount("");
+        setExpenseNote("");
+        setExpenseModal(false);
+      } catch (error) {
+        Alert.default.alert("Xarajat xatosi", error?.message || "Xarajat saqlanmadi.");
+      }
+    };
+    const deleteExpense = expense => {
+      Alert.default.alert("Xarajatni o'chirish", `"${expense.title}" o'chirilsinmi?`, [{
+        text: "Bekor",
+        style: "cancel"
+      }, {
+        text: "O'chirish",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const {
+              error
+            } = await supabase.from("expenses").delete().eq("id", expense.id).eq("user_id", session.user.id);
+            if (error) throw error;
+            setExpenses(old => old.filter(item => item.id !== expense.id));
+          } catch (error) {
+            Alert.default.alert("Xatolik", error?.message || "Xarajat o'chirilmadi.");
+          }
+        }
+      }]);
+    };
+
+    /* =========================================================
+       SIGN OUT
+       ========================================================= */
+
+    const signOut = async () => {
+      const {
+        error
+      } = await supabase.auth.signOut();
+      if (error) {
+        Alert.default.alert("Chiqishda xato", error.message);
+      }
+    };
+
+    /* =========================================================
+       CATEGORY NAME HELPER
+       ========================================================= */
+
+    const getCategoryName = categoryId => {
+      if (!categoryId) {
+        return "Umumiy";
+      }
+      const category = categories.find(item => item.id === categoryId);
+      return category?.name || "Umumiy";
+    };
+
+    /* =========================================================
+       AUTH LOADING
+       ========================================================= */
+
+    if (authLoading) {
+      return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SafeAreaView.default, {
+        style: styles.safe,
+        children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatusBar.default, {
+          barStyle: "light-content",
+          backgroundColor: COLORS.bg
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1662,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.centerLoading,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+            style: styles.logo,
+            children: "ZARNO"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1668,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+            style: styles.loadingText,
+            children: "Tekshirilmoqda..."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1672,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1667,
+          columnNumber: 9
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1661,
+        columnNumber: 7
+      }, this);
+    }
+
+    /* =========================================================
+       AUTH SCREEN
+       ========================================================= */
+
+    if (!session) {
+      return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(AuthScreen, {}, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1685,
+        columnNumber: 12
+      }, this);
+    }
+
+    /* =========================================================
+       KASSA SCREEN
+       ========================================================= */
+
+    const renderKassa = () => {
+      return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+        style: styles.pageRoot,
+        children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.pageHeader,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: {
+              flex: 1
+            },
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.brandMini,
+              children: "ZARNO"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1697,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageTitle,
+              children: "Kassa"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1700,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageSubtitle,
+              children: "Savdo qilish"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1703,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1696,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+            onPress: openAddProduct,
+            style: styles.headerAddButton,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "add",
+              size: 20,
+              color: COLORS.bg
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1712,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.headerAddText,
+              children: "Yangi tovar"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1718,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1708,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1695,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.searchBox,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+            name: "search-outline",
+            size: 20,
+            color: COLORS.goldLight
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1725,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+            value: search,
+            onChangeText: setSearch,
+            placeholder: "Tovar qidirish...",
+            placeholderTextColor: COLORS.muted,
+            style: styles.searchInput
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1731,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1724,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.contentFlex,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+            style: {
+              flex: 1
+            },
+            contentContainerStyle: {
+              paddingBottom: 14
+            },
+            showsVerticalScrollIndicator: false,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+              title: "Tovarlar",
+              subtitle: `${products.length} ta`,
+              right: products.length > 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.countText,
+                children: "Omborda bor"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1753,
+                columnNumber: 19
+              }, this) : null
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1748,
+              columnNumber: 13
+            }, this), filteredProducts.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+              title: "Tovarlar yo'q",
+              text: "Ombor bo'limidan o'zingizga kerakli tovarni qo'shing."
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1761,
+              columnNumber: 15
+            }, this) : filteredProducts.map(product => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.productSaleCard,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.productIcon,
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: "cube-outline",
+                  size: 25,
+                  color: COLORS.green
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1773,
+                  columnNumber: 23
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1772,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: {
+                  flex: 1
+                },
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.productName,
+                  numberOfLines: 1,
+                  children: product.name
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1781,
+                  columnNumber: 23
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.productCategory,
+                  children: getCategoryName(product.category_id)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1790,
+                  columnNumber: 23
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.productPrice,
+                  children: money(product.price)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1800,
+                  columnNumber: 23
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1780,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.stockMini,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: [styles.stockNumber, product.quantity <= 0 ? {
+                    color: COLORS.red
+                  } : product.quantity <= LOW_LIMIT ? {
+                    color: COLORS.orange
+                  } : {
+                    color: COLORS.green
+                  }],
+                  children: product.quantity
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1810,
+                  columnNumber: 23
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.stockLabel,
+                  children: "dona"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1832,
+                  columnNumber: 23
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1809,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                onPress: () => addToCart(product),
+                style: styles.addRound,
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: "add",
+                  size: 22,
+                  color: COLORS.bg
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1843,
+                  columnNumber: 23
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1837,
+                columnNumber: 21
+              }, this)]
+            }, product.id, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1768,
+              columnNumber: 19
+            }, this)), cart.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.emptyCartHint,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                name: "cart-outline",
+                size: 19,
+                color: COLORS.muted
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1856,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.emptyCartHintText,
+                children: "Tovarni bosib savatga qo'shing"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1862,
+                columnNumber: 17
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1855,
+              columnNumber: 15
+            }, this) : null, cart.length > 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+                title: "Savat",
+                right: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                  onPress: () => setCart([]),
+                  children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.clearText,
+                    children: "Tozalash"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1882,
+                    columnNumber: 23
+                  }, this)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1877,
+                  columnNumber: 21
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1874,
+                columnNumber: 17
+              }, this), cart.map(item => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.cartProductCard,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                  style: {
+                    flex: 1
+                  },
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.cartProductName,
+                    numberOfLines: 1,
+                    children: item.name
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1899,
+                    columnNumber: 23
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                    style: styles.salePriceRow,
+                    children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                      style: styles.salePriceLabel,
+                      children: "Sotuv:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1913,
+                      columnNumber: 25
+                    }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                      value: String(item.salePrice),
+                      onChangeText: value => changeSalePrice(item.productId, value),
+                      keyboardType: "numeric",
+                      style: styles.salePriceInput
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1921,
+                      columnNumber: 25
+                    }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                      style: styles.soumTiny,
+                      children: "so'm"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1937,
+                      columnNumber: 25
+                    }, this)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1908,
+                    columnNumber: 23
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1898,
+                  columnNumber: 21
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                  style: styles.quantityControl,
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                    onPress: () => changeCartQuantity(item.productId, -1),
+                    style: styles.quantityBtn,
+                    children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                      style: styles.quantityBtnText,
+                      children: "\u2212"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1963,
+                      columnNumber: 25
+                    }, this)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1952,
+                    columnNumber: 23
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.quantityValue,
+                    children: item.quantity
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1972,
+                    columnNumber: 23
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                    onPress: () => changeCartQuantity(item.productId, 1),
+                    style: styles.quantityBtn,
+                    children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                      style: styles.quantityBtnText,
+                      children: "+"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1991,
+                      columnNumber: 25
+                    }, this)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1980,
+                    columnNumber: 23
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1947,
+                  columnNumber: 21
+                }, this)]
+              }, item.productId, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1892,
+                columnNumber: 19
+              }, this))]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1873,
+              columnNumber: 15
+            }, this) : null]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1741,
+            columnNumber: 11
+          }, this), cart.length > 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.checkoutBar,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.checkoutLabel,
+                children: "JAMI"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2010,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.checkoutTotal,
+                children: money(cartTotal)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2016,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.checkoutProfit,
+                children: ["Foyda: ", money(cartProfit)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2022,
+                columnNumber: 17
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2009,
+              columnNumber: 15
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+              onPress: completeSale,
+              disabled: busyAction,
+              style: [styles.sellButton, busyAction && {
+                opacity: 0.55
+              }],
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                name: "checkmark-circle",
+                size: 18,
+                color: COLORS.bg
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2039,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.sellButtonText,
+                children: busyAction ? "..." : "Sotish"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2045,
+                columnNumber: 17
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2029,
+              columnNumber: 15
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2008,
+            columnNumber: 13
+          }, this) : null]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1740,
+          columnNumber: 9
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1694,
+        columnNumber: 7
+      }, this);
+    };
+
+    /* =========================================================
+       OMBOR SCREEN
+       ========================================================= */
+
+    const renderOmbor = () => {
+      return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+        style: styles.pageRoot,
+        children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.pageHeader,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: {
+              flex: 1
+            },
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.brandMini,
+              children: "ZARNO"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2069,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageTitle,
+              children: "Ombor"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2073,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageSubtitle,
+              children: "Tovarlar va qoldiq"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2077,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2068,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+            onPress: openAddProduct,
+            style: styles.headerAddButton,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "add",
+              size: 20,
+              color: COLORS.bg
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2086,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.headerAddText,
+              children: "Yangi tovar"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2092,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2082,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2067,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.searchBox,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+            name: "search-outline",
+            size: 20,
+            color: COLORS.goldLight
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2099,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+            value: warehouseSearch,
+            onChangeText: setWarehouseSearch,
+            placeholder: "Ombordan qidirish...",
+            placeholderTextColor: COLORS.muted,
+            style: styles.searchInput
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2105,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2098,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+          style: {
+            flex: 1
+          },
+          showsVerticalScrollIndicator: false,
+          contentContainerStyle: {
+            paddingBottom: 25
+          },
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.warehouseValueRow,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.warehouseLabel,
+                children: "OMBOR TANNARXI"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2125,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.warehouseValueGold,
+                children: money(warehouseCostTotal)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2131,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2124,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.verticalDivider
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2140,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.warehouseLabel,
+                children: "SOTUV QIYMATI"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2145,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.warehouseValueGreen,
+                children: money(warehouseRetailTotal)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2151,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2144,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2121,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.threeStatsRow,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatCard, {
+              small: true,
+              label: "Kam",
+              value: `${lowProducts.length} ta`,
+              color: COLORS.orange
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2162,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatCard, {
+              small: true,
+              label: "Qolmagan",
+              value: `${outProducts.length} ta`,
+              color: COLORS.red
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2169,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatCard, {
+              small: true,
+              label: "Mavjud",
+              value: `${products.filter(p => p.quantity > 0).length} ta`,
+              color: COLORS.green
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2176,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2161,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+            title: "Tovarlar",
+            subtitle: `${filteredWarehouseProducts.length} ta`
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2186,
+            columnNumber: 11
+          }, this), filteredWarehouseProducts.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+            title: "Ombor bo'sh",
+            text: "Yangi tovar tugmasi orqali o'zingiz kerakli mahsulotlarni qo'shing."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2193,
+            columnNumber: 13
+          }, this) : filteredWarehouseProducts.map(product => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+            onPress: () => openEditProduct(product),
+            style: styles.warehouseCard,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.warehouseIcon,
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                name: "cube-outline",
+                size: 24,
+                color: COLORS.goldLight
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2210,
+                columnNumber: 21
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2207,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.productName,
+                numberOfLines: 1,
+                children: product.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2218,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.productCategory,
+                children: getCategoryName(product.category_id)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2227,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.stockCost,
+                children: ["Tannarx:", " ", money(product.cost)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2237,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.productPrice,
+                children: ["Sotuv:", " ", money(product.price)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2244,
+                columnNumber: 21
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2217,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.warehouseQty,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: [styles.warehouseQtyNumber, product.quantity <= 0 ? {
+                  color: COLORS.red
+                } : product.quantity <= LOW_LIMIT ? {
+                  color: COLORS.orange
+                } : {
+                  color: COLORS.green
+                }],
+                children: product.quantity
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2257,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.stockLabel,
+                children: "dona"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2279,
+                columnNumber: 21
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2254,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+              onPress: () => deleteProduct(product),
+              style: styles.trashBtn,
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                name: "trash-outline",
+                size: 19,
+                color: COLORS.red
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2292,
+                columnNumber: 21
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2286,
+              columnNumber: 19
+            }, this)]
+          }, product.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2200,
+            columnNumber: 17
+          }, this)), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+            title: "Kam qolgan mahsulotlar",
+            subtitle: `≤ ${LOW_LIMIT} dona`
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2303,
+            columnNumber: 11
+          }, this), lowProducts.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.statusGoodBox,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "checkmark-circle-outline",
+              size: 21,
+              color: COLORS.green
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2312,
+              columnNumber: 15
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.statusGoodText,
+              children: "Kam qolgan mahsulot yo'q"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2317,
+              columnNumber: 15
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2309,
+            columnNumber: 13
+          }, this) : lowProducts.map(product => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.alertItem,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.alertItemTitle,
+                children: product.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2330,
+                columnNumber: 19
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.alertItemText,
+                children: ["Qoldiq: ", product.quantity, " dona"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2337,
+                columnNumber: 19
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2329,
+              columnNumber: 17
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: {
+                color: COLORS.orange,
+                fontWeight: "900"
+              },
+              children: "KAM"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2346,
+              columnNumber: 17
+            }, this)]
+          }, product.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2325,
+            columnNumber: 15
+          }, this)), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+            title: "Qolmagan mahsulotlar",
+            subtitle: `${outProducts.length} ta`
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2358,
+            columnNumber: 11
+          }, this), outProducts.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.statusGoodBox,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "checkmark-circle-outline",
+              size: 21,
+              color: COLORS.green
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2367,
+              columnNumber: 15
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.statusGoodText,
+              children: "Qolmagan mahsulot yo'q"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2372,
+              columnNumber: 15
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2364,
+            columnNumber: 13
+          }, this) : outProducts.map(product => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: [styles.alertItem, {
+              borderColor: "rgba(241,106,114,0.35)"
+            }],
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.alertItemTitle,
+                children: product.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2391,
+                columnNumber: 19
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.alertItemText,
+                children: "Qoldiq: 0 dona"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2398,
+                columnNumber: 19
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2390,
+              columnNumber: 17
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: {
+                color: COLORS.red,
+                fontWeight: "900"
+              },
+              children: "YO'Q"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2407,
+              columnNumber: 17
+            }, this)]
+          }, product.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2380,
+            columnNumber: 15
+          }, this)), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+            title: "Kategoriyalar",
+            right: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+              onPress: () => setCategoryModal(true),
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.clearText,
+                children: "Boshqarish"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2427,
+                columnNumber: 17
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2422,
+              columnNumber: 15
+            }, this)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2419,
+            columnNumber: 11
+          }, this), categories.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+            icon: "layers-outline",
+            title: "Kategoriyalar yo'q",
+            text: "Kerakli kategoriyalarni o'zingiz qo'shing."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2435,
+            columnNumber: 13
+          }, this) : /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.categoryPillWrap,
+            children: categories.map(category => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.categoryPill,
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.categoryPillText,
+                children: category.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2450,
+                columnNumber: 21
+              }, this)
+            }, category.id, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2446,
+              columnNumber: 19
+            }, this))
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2441,
+            columnNumber: 13
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2114,
+          columnNumber: 9
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 2066,
+        columnNumber: 7
+      }, this);
+    };
+
+    /* =========================================================
+       REPORT SCREEN
+       ========================================================= */
+
+    const renderReport = () => {
+      return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+        style: styles.pageRoot,
+        children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.pageHeader,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: {
+              flex: 1
+            },
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.brandMini,
+              children: "ZARNO"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2476,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageTitle,
+              children: "Hisobot"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2480,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageSubtitle,
+              children: "Savdo va foyda"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2484,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2475,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+            onPress: loadAll,
+            style: styles.iconHeaderButton,
+            children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "refresh",
+              size: 20,
+              color: COLORS.goldLight
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2493,
+              columnNumber: 13
+            }, this)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2489,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2474,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+          style: {
+            flex: 1
+          },
+          showsVerticalScrollIndicator: false,
+          contentContainerStyle: {
+            paddingBottom: 25
+          },
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.profitHero,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.profitHeroLabel,
+              children: "SOF FOYDA"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2509,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.profitHeroValue,
+              children: money(netProfit)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2513,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.profitHeroSmall,
+              children: "Yalpi foyda \u2212 xarajatlar"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2517,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2508,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.twoStatsRow,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatCard, {
+              label: "Umumiy savdo",
+              value: money(totalSales),
+              color: COLORS.goldLight
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2523,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatCard, {
+              label: "Yalpi foyda",
+              value: money(grossProfit),
+              color: COLORS.green
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2529,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2522,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.reportCard,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.reportRow,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportLabel,
+                children: "Tovar tannarxi"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2538,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportValue,
+                children: money(totalCost)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2544,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2537,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.reportRow,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportLabel,
+                children: "Yalpi foyda"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2552,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: [styles.reportValue, {
+                  color: COLORS.green
+                }],
+                children: money(grossProfit)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2558,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2551,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.reportRow,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportLabel,
+                children: "Jami xarajat"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2571,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: [styles.reportValue, {
+                  color: COLORS.red
+                }],
+                children: money(totalExpenses)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2577,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2570,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.reportDivider
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2589,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.reportRow,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportLabel,
+                children: "SOF FOYDA"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2594,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: [styles.reportValue, styles.reportValueBig, {
+                  color: netProfit >= 0 ? COLORS.green : COLORS.red
+                }],
+                children: money(netProfit)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2600,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2593,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2536,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+            title: "Eng yaxshi sotilayotganlar",
+            subtitle: "Eng ko'p dona sotilgan",
+            right: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "trending-up",
+              size: 23,
+              color: COLORS.green
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2621,
+              columnNumber: 15
+            }, this)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2617,
+            columnNumber: 11
+          }, this), bestSelling.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+            icon: "trending-up-outline",
+            title: "Hali savdo yo'q",
+            text: "Sotuvlar boshlangach eng yaxshi mahsulotlar shu yerda chiqadi."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2630,
+            columnNumber: 13
+          }, this) : bestSelling.map((item, index) => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.reportProductCard,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.rankCircle,
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.rankText,
+                children: index + 1
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2645,
+                columnNumber: 21
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2642,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportProductName,
+                numberOfLines: 1,
+                children: item.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2655,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportProductMeta,
+                children: [item.quantity, " dona sotildi"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2664,
+                columnNumber: 21
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2654,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                alignItems: "flex-end"
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportRevenue,
+                children: money(item.revenue)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2678,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportProfit,
+                children: ["+", money(item.profit)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2686,
+                columnNumber: 21
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2673,
+              columnNumber: 19
+            }, this)]
+          }, `${item.name}-${index}`, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2638,
+            columnNumber: 17
+          }, this)), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+            title: "Sotilmayotgan tovarlar",
+            subtitle: "Hali sotilmagan yoki eng kam sotilgan",
+            right: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "trending-down",
+              size: 23,
+              color: COLORS.red
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2703,
+              columnNumber: 15
+            }, this)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2699,
+            columnNumber: 11
+          }, this), notSelling.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+            icon: "trending-down-outline",
+            title: "Tovarlar yo'q",
+            text: "Omborga tovar qo'shing."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2712,
+            columnNumber: 13
+          }, this) : notSelling.map(({
+            product,
+            sold
+          }, index) => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.notSellingCard,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.notSellingIcon,
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                name: "trending-down",
+                size: 21,
+                color: COLORS.red
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2727,
+                columnNumber: 21
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2724,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportProductName,
+                numberOfLines: 1,
+                children: product.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2735,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.reportProductMeta,
+                children: ["Sotilgan: ", sold, " dona"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2744,
+                columnNumber: 21
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2734,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: {
+                color: sold === 0 ? COLORS.red : COLORS.orange,
+                fontWeight: "900"
+              },
+              children: sold === 0 ? "0 dona" : `${sold} dona`
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2753,
+              columnNumber: 19
+            }, this)]
+          }, product.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2720,
+            columnNumber: 17
+          }, this)), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SectionTitle, {
+            title: "Savdolar tarixi",
+            subtitle: `${sales.length} ta savdo`
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2771,
+            columnNumber: 11
+          }, this), sales.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+            icon: "receipt-outline",
+            title: "Savdolar yo'q"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2777,
+            columnNumber: 13
+          }, this) : sales.slice(0, 20).map(sale => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.historyCard,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.historyTitle,
+                children: "Savdo"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2789,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.historyDate,
+                children: new Date(sale.created_at).toLocaleString("uz-UZ")
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2797,
+                columnNumber: 21
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2788,
+              columnNumber: 19
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                alignItems: "flex-end"
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.historyTotal,
+                children: money(sale.total)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2815,
+                columnNumber: 21
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.historyProfit,
+                children: ["+", money(sale.profit)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2821,
+                columnNumber: 21
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2810,
+              columnNumber: 19
+            }, this)]
+          }, sale.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2784,
+            columnNumber: 17
+          }, this))]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2501,
+          columnNumber: 9
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 2473,
+        columnNumber: 7
+      }, this);
+    };
+
+    /* =========================================================
+       EXPENSE SCREEN
+       ========================================================= */
+
+    const renderExpenses = () => {
+      return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+        style: styles.pageRoot,
+        children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.pageHeader,
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: {
+              flex: 1
+            },
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.brandMini,
+              children: "ZARNO"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2845,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageTitle,
+              children: "Xarajat"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2849,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.pageSubtitle,
+              children: "Savdo pulidan chiqqan xarajatlar"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2853,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2844,
+            columnNumber: 11
+          }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+            onPress: () => setExpenseModal(true),
+            style: styles.headerAddButton,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "add",
+              size: 20,
+              color: COLORS.bg
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2864,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.headerAddText,
+              children: "Xarajat"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2870,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2858,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2843,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+          style: {
+            flex: 1
+          },
+          showsVerticalScrollIndicator: false,
+          contentContainerStyle: {
+            paddingBottom: 25
+          },
+          children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.expenseHero,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.expenseHeroLabel,
+              children: "JAMI XARAJAT"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2884,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.expenseHeroValue,
+              children: money(totalExpenses)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2888,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2883,
+            columnNumber: 11
+          }, this), expenses.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+            icon: "wallet-outline",
+            title: "Xarajatlar yo'q",
+            text: "Masalan: abet, taxi, yetkazib berish yoki boshqa xarajatlarni shu yerga yozing."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2894,
+            columnNumber: 13
+          }, this) : expenses.map(expense => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: styles.expenseCard,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.expenseIcon,
+              children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                name: "wallet-outline",
+                size: 21,
+                color: COLORS.orange
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2908,
+                columnNumber: 19
+              }, this)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2905,
+              columnNumber: 17
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                flex: 1
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.expenseTitle,
+                children: expense.title
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2916,
+                columnNumber: 19
+              }, this), expense.note ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.expenseNote,
+                children: expense.note
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2923,
+                columnNumber: 21
+              }, this) : null, /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.expenseDate,
+                children: new Date(expense.created_at).toLocaleString("uz-UZ")
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2932,
+                columnNumber: 19
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2915,
+              columnNumber: 17
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: {
+                alignItems: "flex-end"
+              },
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.expenseAmount,
+                children: ["-", money(expense.amount)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2948,
+                columnNumber: 19
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                onPress: () => deleteExpense(expense),
+                style: styles.smallTrash,
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: "trash-outline",
+                  size: 17,
+                  color: COLORS.red
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2964,
+                  columnNumber: 21
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2954,
+                columnNumber: 19
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2943,
+              columnNumber: 17
+            }, this)]
+          }, expense.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2901,
+            columnNumber: 15
+          }, this)), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+            onPress: signOut,
+            style: styles.logoutButton,
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+              name: "log-out-outline",
+              size: 19,
+              color: COLORS.white
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2979,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+              style: styles.logoutText,
+              children: "Akkauntdan chiqish"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2985,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2975,
+            columnNumber: 11
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2876,
+          columnNumber: 9
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 2842,
+        columnNumber: 7
+      }, this);
+    };
+
+    /* =========================================================
+       NAVIGATION
+       ========================================================= */
+
+    const navItems = [{
+      key: "kassa",
+      label: "Kassa",
+      icon: "cart-outline",
+      activeIcon: "cart"
+    }, {
+      key: "ombor",
+      label: "Ombor",
+      icon: "cube-outline",
+      activeIcon: "cube"
+    }, {
+      key: "hisobot",
+      label: "Hisobot",
+      icon: "bar-chart-outline",
+      activeIcon: "bar-chart"
+    }, {
+      key: "xarajat",
+      label: "Xarajat",
+      icon: "wallet-outline",
+      activeIcon: "wallet"
+    }];
+    return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(SafeAreaView.default, {
+      style: styles.safe,
+      children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(StatusBar.default, {
+        barStyle: "light-content",
+        backgroundColor: COLORS.bg
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 3029,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+        style: styles.appContainer,
+        children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.mainContent,
+          children: page === "kassa" ? renderKassa() : page === "ombor" ? renderOmbor() : page === "hisobot" ? renderReport() : renderExpenses()
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 3035,
+          columnNumber: 9
+        }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.bottomNav,
+          children: navItems.map(item => {
+            const active = page === item.key;
+            return /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+              onPress: () => setPage(item.key),
+              style: styles.navItem,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: [styles.navIcon, active && styles.navIconActive],
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: active ? item.activeIcon : item.icon,
+                  size: 20,
+                  color: active ? COLORS.goldLight : COLORS.muted
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3064,
+                  columnNumber: 19
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3057,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: [styles.navText, active && styles.navTextActive],
+                children: item.label
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3079,
+                columnNumber: 17
+              }, this)]
+            }, item.key, true, {
+              fileName: _jsxFileName,
+              lineNumber: 3050,
+              columnNumber: 15
+            }, this);
+          })
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 3045,
+          columnNumber: 9
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 3034,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Modal.default, {
+        visible: productModal,
+        animationType: "slide",
+        transparent: true,
+        onRequestClose: () => setProductModal(false),
+        children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.modalOverlay,
+          children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(KeyboardAvoidingView.default, {
+            behavior: Platform.default.OS === "ios" ? "padding" : undefined,
+            style: styles.modalKeyboard,
+            children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.modalCard,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.modalHeader,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.modalTitle,
+                    children: editingProduct ? "Tovarni tahrirlash" : "Yangi tovar"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3120,
+                    columnNumber: 19
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.modalSubtitle,
+                    children: "Mahsulot ma'lumotlarini kiriting"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3128,
+                    columnNumber: 19
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3119,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                  onPress: () => setProductModal(false),
+                  style: styles.modalClose,
+                  children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                    name: "close",
+                    size: 23,
+                    color: COLORS.white
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3145,
+                    columnNumber: 19
+                  }, this)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3137,
+                  columnNumber: 17
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3116,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+                keyboardShouldPersistTaps: "handled",
+                showsVerticalScrollIndicator: false,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.fieldLabel,
+                  children: "Tovar nomi"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3159,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                  value: productName,
+                  onChangeText: setProductName,
+                  placeholder: "Masalan: iPhone 13 chexol",
+                  placeholderTextColor: COLORS.muted,
+                  style: styles.modalInput
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3165,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.fieldLabel,
+                  children: "Kategoriya"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3175,
+                  columnNumber: 17
+                }, this), categories.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                  style: styles.categoryHint,
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                    name: "layers-outline",
+                    size: 17,
+                    color: COLORS.orange
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3187,
+                    columnNumber: 21
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.categoryHintText,
+                    children: "Hali kategoriya yo'q. Pastdagi tugma orqali qo'shing."
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3193,
+                    columnNumber: 21
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3182,
+                  columnNumber: 19
+                }, this) : /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+                  horizontal: true,
+                  showsHorizontalScrollIndicator: false,
+                  contentContainerStyle: {
+                    gap: 8,
+                    paddingBottom: 8
+                  },
+                  children: categories.map(category => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                    onPress: () => setProductCategoryId(category.id),
+                    style: [styles.categorySelect, productCategoryId === category.id && styles.categorySelectActive],
+                    children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                      style: [styles.categorySelectText, productCategoryId === category.id && {
+                        color: COLORS.bg
+                      }],
+                      children: category.name
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 3230,
+                      columnNumber: 27
+                    }, this)
+                  }, category.id, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3216,
+                    columnNumber: 25
+                  }, this))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3204,
+                  columnNumber: 19
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.fieldLabel,
+                  children: "Kelgan narxi"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3249,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                  value: productCost,
+                  onChangeText: setProductCost,
+                  placeholder: "0",
+                  placeholderTextColor: COLORS.muted,
+                  keyboardType: "numeric",
+                  style: styles.modalInput
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3255,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.fieldLabel,
+                  children: "Sotilish narxi"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3266,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                  value: productPrice,
+                  onChangeText: setProductPrice,
+                  placeholder: "0",
+                  placeholderTextColor: COLORS.muted,
+                  keyboardType: "numeric",
+                  style: styles.modalInput
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3272,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.fieldLabel,
+                  children: editingProduct ? "Jami qoldiq" : "Boshlang'ich miqdor"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3283,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                  value: productQuantity,
+                  onChangeText: setProductQuantity,
+                  placeholder: "0",
+                  placeholderTextColor: COLORS.muted,
+                  keyboardType: "numeric",
+                  style: styles.modalInput
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3291,
+                  columnNumber: 17
+                }, this), editingProduct ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(_reactJsxDevRuntime.Fragment, {
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.fieldLabel,
+                    children: "Yangi kelgan qo'shimcha miqdor"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3304,
+                    columnNumber: 21
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                    value: productAddStock,
+                    onChangeText: setProductAddStock,
+                    placeholder: "Masalan: 10",
+                    placeholderTextColor: COLORS.muted,
+                    keyboardType: "numeric",
+                    style: styles.modalInput
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3310,
+                    columnNumber: 21
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.helperText,
+                    children: "Bu maydon eski qoldiqqa qo'shiladi."
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3323,
+                    columnNumber: 21
+                  }, this)]
+                }, void 0, true) : null, editingProduct ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                  onPress: () => deleteProduct(editingProduct),
+                  style: styles.deleteLargeButton,
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                    name: "trash-outline",
+                    size: 19,
+                    color: COLORS.white
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3345,
+                    columnNumber: 21
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.deleteLargeButtonText,
+                    children: "Tovarni o'chirish"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3351,
+                    columnNumber: 21
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3335,
+                  columnNumber: 19
+                }, this) : null, /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                  disabled: busyAction,
+                  onPress: saveProduct,
+                  style: [styles.saveLargeButton, busyAction && {
+                    opacity: 0.55
+                  }],
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                    name: "checkmark-circle-outline",
+                    size: 19,
+                    color: COLORS.bg
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3371,
+                    columnNumber: 19
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.saveLargeButtonText,
+                    children: busyAction ? "Saqlanmoqda..." : "Saqlash"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3377,
+                    columnNumber: 19
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3361,
+                  columnNumber: 17
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3153,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 3115,
+              columnNumber: 13
+            }, this)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 3107,
+            columnNumber: 11
+          }, this)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 3106,
+          columnNumber: 9
+        }, this)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 3098,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Modal.default, {
+        visible: categoryModal,
+        animationType: "slide",
+        transparent: true,
+        onRequestClose: () => setCategoryModal(false),
+        children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.modalOverlay,
+          children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: [styles.modalCard, {
+              maxHeight: "88%"
+            }],
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.modalHeader,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.modalTitle,
+                  children: "Kategoriyalar"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3418,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.modalSubtitle,
+                  children: "Kategoriyalarni o'zingiz yarating"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3424,
+                  columnNumber: 17
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3417,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                onPress: () => setCategoryModal(false),
+                style: styles.modalClose,
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: "close",
+                  size: 23,
+                  color: COLORS.white
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3439,
+                  columnNumber: 17
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3433,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 3414,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.inlineAddRow,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                value: categoryName,
+                onChangeText: setCategoryName,
+                placeholder: "Masalan: Chexollar",
+                placeholderTextColor: COLORS.muted,
+                style: [styles.modalInput, {
+                  flex: 1,
+                  marginBottom: 0
+                }]
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3448,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                onPress: addCategory,
+                style: styles.squareGold,
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: "add",
+                  size: 23,
+                  color: COLORS.bg
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3468,
+                  columnNumber: 17
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3464,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 3447,
+              columnNumber: 13
+            }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+              style: {
+                marginTop: 15
+              },
+              showsVerticalScrollIndicator: false,
+              children: categories.length === 0 ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(EmptyState, {
+                icon: "layers-outline",
+                title: "Kategoriya yo'q",
+                text: "Bu yer bo'sh. Kerakli kategoriyani o'zingiz qo'shing."
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3485,
+                columnNumber: 17
+              }, this) : categories.map((category, index) => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.categoryListRow,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                  style: styles.categoryIndex,
+                  children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.categoryIndexText,
+                    children: index + 1
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3504,
+                    columnNumber: 25
+                  }, this)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3499,
+                  columnNumber: 23
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.categoryListName,
+                  children: category.name
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3513,
+                  columnNumber: 23
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                  onPress: () => deleteCategory(category),
+                  children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                    name: "trash-outline",
+                    size: 21,
+                    color: COLORS.red
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3528,
+                    columnNumber: 25
+                  }, this)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3521,
+                  columnNumber: 23
+                }, this)]
+              }, category.id, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3493,
+                columnNumber: 21
+              }, this))
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 3476,
+              columnNumber: 13
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 3406,
+            columnNumber: 11
+          }, this)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 3405,
+          columnNumber: 9
+        }, this)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 3397,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Modal.default, {
+        visible: expenseModal,
+        animationType: "slide",
+        transparent: true,
+        onRequestClose: () => setExpenseModal(false),
+        children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.modalOverlay,
+          children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(KeyboardAvoidingView.default, {
+            behavior: Platform.default.OS === "ios" ? "padding" : undefined,
+            style: styles.modalKeyboard,
+            children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.modalCard,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.modalHeader,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.modalTitle,
+                    children: "Xarajat qo'shish"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3569,
+                    columnNumber: 19
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.modalSubtitle,
+                    children: "Pul nimaga sarflanganini yozing"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3575,
+                    columnNumber: 19
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3568,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                  onPress: () => setExpenseModal(false),
+                  style: styles.modalClose,
+                  children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                    name: "close",
+                    size: 23,
+                    color: COLORS.white
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3590,
+                    columnNumber: 19
+                  }, this)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3584,
+                  columnNumber: 17
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3565,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.fieldLabel,
+                children: "Xarajat nomi"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3598,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                value: expenseTitle,
+                onChangeText: setExpenseTitle,
+                placeholder: "Masalan: Abet",
+                placeholderTextColor: COLORS.muted,
+                style: styles.modalInput
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3604,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.fieldLabel,
+                children: "Summa"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3614,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                value: expenseAmount,
+                onChangeText: setExpenseAmount,
+                placeholder: "0",
+                placeholderTextColor: COLORS.muted,
+                keyboardType: "numeric",
+                style: styles.modalInput
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3620,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                style: styles.fieldLabel,
+                children: "Izoh"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3631,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TextInput.default, {
+                value: expenseNote,
+                onChangeText: setExpenseNote,
+                placeholder: "Masalan: 2 kishi uchun",
+                placeholderTextColor: COLORS.muted,
+                multiline: true,
+                style: [styles.modalInput, {
+                  height: 95,
+                  textAlignVertical: "top"
+                }]
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3637,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                onPress: saveExpense,
+                style: styles.saveLargeButton,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: "checkmark-circle-outline",
+                  size: 19,
+                  color: COLORS.bg
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3661,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.saveLargeButtonText,
+                  children: "Xarajatni saqlash"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3667,
+                  columnNumber: 17
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3655,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 3564,
+              columnNumber: 13
+            }, this)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 3556,
+            columnNumber: 11
+          }, this)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 3555,
+          columnNumber: 9
+        }, this)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 3547,
+        columnNumber: 7
+      }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Modal.default, {
+        visible: receiptModal,
+        animationType: "slide",
+        transparent: true,
+        onRequestClose: () => setReceiptModal(false),
+        children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+          style: styles.modalOverlay,
+          children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+            style: [styles.modalCard, {
+              maxHeight: "88%"
+            }],
+            children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+              style: styles.modalHeader,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.modalTitle,
+                  children: "Sotuv cheki"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3705,
+                  columnNumber: 17
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.modalSubtitle,
+                  children: "ZARNO Kassa"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3711,
+                  columnNumber: 17
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3704,
+                columnNumber: 15
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                onPress: () => setReceiptModal(false),
+                style: styles.modalClose,
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Icon, {
+                  name: "close",
+                  size: 23,
+                  color: COLORS.white
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3726,
+                  columnNumber: 17
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3720,
+                columnNumber: 15
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 3701,
+              columnNumber: 13
+            }, this), receipt ? /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(ScrollView.default, {
+              showsVerticalScrollIndicator: false,
+              children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.receiptBrandBox,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.receiptBrand,
+                  children: "ZARNO"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3745,
+                  columnNumber: 19
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.receiptDate,
+                  children: receipt.created_at ? new Date(receipt.created_at).toLocaleString("uz-UZ") : ""
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3753,
+                  columnNumber: 19
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3740,
+                columnNumber: 17
+              }, this), receipt.items.map((item, index) => /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.receiptRow,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                  style: {
+                    flex: 1
+                  },
+                  children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.receiptItemName,
+                    children: item.name
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3779,
+                    columnNumber: 25
+                  }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                    style: styles.receiptItemMeta,
+                    children: [item.quantity, " \xD7", " ", money(item.salePrice)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 3787,
+                    columnNumber: 25
+                  }, this)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3774,
+                  columnNumber: 23
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.receiptItemTotal,
+                  children: money(item.total)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3799,
+                  columnNumber: 23
+                }, this)]
+              }, `${item.productId}-${index}`, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3770,
+                columnNumber: 21
+              }, this)), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.receiptDivider
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3810,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.receiptSummaryRow,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.receiptSummaryLabel,
+                  children: "Jami"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3821,
+                  columnNumber: 19
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.receiptSummaryValue,
+                  children: money(receipt.total)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3829,
+                  columnNumber: 19
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3816,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(View.default, {
+                style: styles.receiptSummaryRow,
+                children: [/*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.receiptSummaryLabel,
+                  children: "Foyda"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3843,
+                  columnNumber: 19
+                }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: [styles.receiptSummaryValue, {
+                    color: COLORS.green
+                  }],
+                  children: money(receipt.profit)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3851,
+                  columnNumber: 19
+                }, this)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 3838,
+                columnNumber: 17
+              }, this), /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(TouchableOpacity.default, {
+                onPress: () => setReceiptModal(false),
+                style: styles.closeReceiptButton,
+                children: /*#__PURE__*/(0, _reactJsxDevRuntime.jsxDEV)(Text.default, {
+                  style: styles.closeReceiptText,
+                  children: "Yopish"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 3872,
+                  columnNumber: 19
+                }, this)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 3864,
+                columnNumber: 17
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 3735,
+              columnNumber: 15
+            }, this) : null]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 3693,
+            columnNumber: 11
+          }, this)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 3692,
+          columnNumber: 9
+        }, this)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 3684,
+        columnNumber: 7
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 3028,
+      columnNumber: 5
+    }, this);
+  }
+
+  /* =========================================================
+     STYLES
+     ========================================================= */
+  _s2(App, "zaxCA84rLm+KIH0Tef5DtUjpqSU=");
+  _c7 = App;
+  const styles = StyleSheet.default.create({
+    safe: {
+      flex: 1,
+      backgroundColor: COLORS.bg
+    },
+    appContainer: {
+      flex: 1,
+      backgroundColor: COLORS.bg,
+      alignSelf: "center",
+      width: "100%",
+      maxWidth: 520
+    },
+    mainContent: {
+      flex: 1
+    },
+    pageRoot: {
+      flex: 1,
+      backgroundColor: COLORS.bg,
+      paddingHorizontal: 14,
+      paddingTop: 8
+    },
+    contentFlex: {
+      flex: 1
+    },
+    /* =========================
+       HEADER
+       ========================= */
+
+    pageHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingTop: 8,
+      paddingBottom: 12
+    },
+    brandMini: {
+      color: COLORS.goldLight,
+      fontSize: 9,
+      fontWeight: "900",
+      letterSpacing: 4,
+      marginBottom: 2
+    },
+    pageTitle: {
+      color: COLORS.white,
+      fontSize: 25,
+      fontWeight: "900",
+      letterSpacing: -0.5
+    },
+    pageSubtitle: {
+      color: COLORS.muted,
+      fontSize: 10,
+      marginTop: 2
+    },
+    headerAddButton: {
+      height: 46,
+      paddingHorizontal: 13,
+      borderRadius: 15,
+      backgroundColor: COLORS.gold,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5,
+      marginLeft: 10
+    },
+    headerAddText: {
+      color: COLORS.bg,
+      fontWeight: "900",
+      fontSize: 11
+    },
+    iconHeaderButton: {
+      width: 45,
+      height: 45,
+      borderRadius: 14,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    /* =========================
+       SEARCH
+       ========================= */
+
+    searchBox: {
+      height: 48,
+      borderRadius: 14,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 13,
+      marginBottom: 12
+    },
+    searchInput: {
+      flex: 1,
+      color: COLORS.white,
+      fontSize: 12,
+      marginLeft: 8
+    },
+    /* =========================
+       SECTIONS
+       ========================= */
+
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 6,
+      marginBottom: 9
+    },
+    sectionTitle: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: "900"
+    },
+    sectionSubtitle: {
+      color: COLORS.muted,
+      fontSize: 9,
+      marginTop: 2
+    },
+    countText: {
+      color: COLORS.green,
+      fontSize: 9,
+      fontWeight: "900"
+    },
+    clearText: {
+      color: COLORS.red,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    /* =========================
+       PRODUCTS
+       ========================= */
+
+    productSaleCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 16,
+      padding: 10,
+      marginBottom: 8
+    },
+    productIcon: {
+      width: 51,
+      height: 51,
+      borderRadius: 14,
+      backgroundColor: COLORS.bg2,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 10
+    },
+    productName: {
+      color: COLORS.white,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    productCategory: {
+      color: COLORS.muted,
+      fontSize: 9,
+      marginTop: 3
+    },
+    productPrice: {
+      color: COLORS.goldLight,
+      fontSize: 13,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    stockMini: {
+      alignItems: "center",
+      marginHorizontal: 8
+    },
+    stockNumber: {
+      fontSize: 15,
+      fontWeight: "900"
+    },
+    stockLabel: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 1
+    },
+    addRound: {
+      width: 39,
+      height: 39,
+      borderRadius: 12,
+      backgroundColor: COLORS.gold,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    /* =========================
+       CART
+       ========================= */
+
+    emptyCartHint: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 10,
+      gap: 7
+    },
+    emptyCartHintText: {
+      color: COLORS.muted,
+      fontSize: 9
+    },
+    cartProductCard: {
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 16,
+      padding: 11,
+      marginBottom: 8,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    cartProductName: {
+      color: COLORS.white,
+      fontSize: 12,
+      fontWeight: "900",
+      marginBottom: 5
+    },
+    salePriceRow: {
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    salePriceLabel: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginRight: 4
+    },
+    salePriceInput: {
+      width: 105,
+      height: 34,
+      backgroundColor: COLORS.bg,
+      borderWidth: 1,
+      borderColor: COLORS.gold,
+      borderRadius: 9,
+      color: COLORS.white,
+      fontSize: 11,
+      fontWeight: "900",
+      paddingHorizontal: 9
+    },
+    soumTiny: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginLeft: 4
+    },
+    quantityControl: {
+      height: 34,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      backgroundColor: COLORS.bg,
+      flexDirection: "row",
+      alignItems: "center",
+      marginLeft: 8
+    },
+    quantityBtn: {
+      width: 30,
+      height: 32,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    quantityBtnText: {
+      color: COLORS.goldLight,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    quantityValue: {
+      color: COLORS.white,
+      fontSize: 12,
+      fontWeight: "900",
+      minWidth: 24,
+      textAlign: "center"
+    },
+    checkoutBar: {
+      backgroundColor: COLORS.card,
+      borderTopWidth: 1,
+      borderColor: COLORS.border,
+      paddingHorizontal: 10,
+      paddingVertical: 10,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    checkoutLabel: {
+      color: COLORS.muted,
+      fontSize: 8,
+      fontWeight: "900"
+    },
+    checkoutTotal: {
+      color: COLORS.goldLight,
+      fontSize: 19,
+      fontWeight: "900",
+      marginTop: 2
+    },
+    checkoutProfit: {
+      color: COLORS.green,
+      fontSize: 8,
+      marginTop: 1
+    },
+    sellButton: {
+      minWidth: 105,
+      height: 48,
+      borderRadius: 14,
+      backgroundColor: COLORS.gold,
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 6,
+      marginLeft: 10
+    },
+    sellButtonText: {
+      color: COLORS.bg,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    /* =========================
+       OMBOR
+       ========================= */
+
+    warehouseValueRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 13,
+      marginBottom: 9
+    },
+    verticalDivider: {
+      width: 1,
+      height: 38,
+      backgroundColor: COLORS.border,
+      marginHorizontal: 10
+    },
+    warehouseLabel: {
+      color: COLORS.muted,
+      fontSize: 7,
+      fontWeight: "900",
+      marginBottom: 4
+    },
+    warehouseValueGold: {
+      color: COLORS.goldLight,
+      fontSize: 14,
+      fontWeight: "900"
+    },
+    warehouseValueGreen: {
+      color: COLORS.green,
+      fontSize: 14,
+      fontWeight: "900"
+    },
+    threeStatsRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 4
+    },
+    statCardSmall: {
+      flex: 1,
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 11
+    },
+    statLabel: {
+      color: COLORS.muted,
+      fontSize: 7,
+      marginBottom: 5
+    },
+    statValueSmall: {
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    warehouseCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 10,
+      marginBottom: 8
+    },
+    warehouseIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 14,
+      backgroundColor: COLORS.bg2,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 9
+    },
+    stockCost: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 4
+    },
+    warehouseQty: {
+      alignItems: "center",
+      marginHorizontal: 8
+    },
+    warehouseQtyNumber: {
+      fontSize: 16,
+      fontWeight: "900"
+    },
+    trashBtn: {
+      width: 35,
+      height: 35,
+      borderRadius: 10,
+      backgroundColor: COLORS.bg2,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    alertItem: {
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: "rgba(240,162,82,0.35)",
+      padding: 12,
+      marginBottom: 8,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    alertItemTitle: {
+      color: COLORS.white,
+      fontSize: 11,
+      fontWeight: "900"
+    },
+    alertItemText: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 3
+    },
+    statusGoodBox: {
+      backgroundColor: "rgba(53,207,145,0.08)",
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: "rgba(53,207,145,0.25)",
+      padding: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 9
+    },
+    statusGoodText: {
+      color: COLORS.green,
+      fontSize: 9,
+      fontWeight: "800"
+    },
+    categoryPillWrap: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    categoryPill: {
+      paddingHorizontal: 11,
+      paddingVertical: 8,
+      backgroundColor: COLORS.card,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: COLORS.border
+    },
+    categoryPillText: {
+      color: COLORS.text,
+      fontSize: 9,
+      fontWeight: "800"
+    },
+    /* =========================
+       REPORT
+       ========================= */
+
+    profitHero: {
+      backgroundColor: COLORS.card,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 16,
+      marginBottom: 9
+    },
+    profitHeroLabel: {
+      color: COLORS.green,
+      fontSize: 8,
+      fontWeight: "900",
+      letterSpacing: 1.5
+    },
+    profitHeroValue: {
+      color: COLORS.green,
+      fontSize: 28,
+      fontWeight: "900",
+      marginTop: 7
+    },
+    profitHeroSmall: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 4
+    },
+    twoStatsRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 9
+    },
+    statCard: {
+      flex: 1,
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 12
+    },
+    statValue: {
+      fontSize: 14,
+      fontWeight: "900"
+    },
+    reportCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 15,
+      marginBottom: 8
+    },
+    reportRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 7
+    },
+    reportLabel: {
+      color: COLORS.muted,
+      fontSize: 9
+    },
+    reportValue: {
+      color: COLORS.white,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    reportValueBig: {
+      fontSize: 14
+    },
+    reportDivider: {
+      height: 1,
+      backgroundColor: COLORS.border,
+      marginVertical: 5
+    },
+    reportProductCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 11,
+      marginBottom: 8,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    rankCircle: {
+      width: 34,
+      height: 34,
+      borderRadius: 12,
+      backgroundColor: COLORS.bg2,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 10
+    },
+    rankText: {
+      color: COLORS.goldLight,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    reportProductName: {
+      color: COLORS.white,
+      fontSize: 11,
+      fontWeight: "900"
+    },
+    reportProductMeta: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 3
+    },
+    reportRevenue: {
+      color: COLORS.goldLight,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    reportProfit: {
+      color: COLORS.green,
+      fontSize: 8,
+      fontWeight: "900",
+      marginTop: 3
+    },
+    notSellingCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: "rgba(241,106,114,0.3)",
+      padding: 11,
+      marginBottom: 8,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    notSellingIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 11,
+      backgroundColor: "rgba(241,106,114,0.10)",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 10
+    },
+    historyCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 11,
+      marginBottom: 7,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    historyTitle: {
+      color: COLORS.white,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    historyDate: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 3
+    },
+    historyTotal: {
+      color: COLORS.goldLight,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    historyProfit: {
+      color: COLORS.green,
+      fontSize: 8,
+      fontWeight: "900",
+      marginTop: 3
+    },
+    /* =========================
+       EXPENSES
+       ========================= */
+
+    expenseHero: {
+      backgroundColor: COLORS.card,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 16,
+      marginBottom: 10
+    },
+    expenseHeroLabel: {
+      color: COLORS.orange,
+      fontSize: 8,
+      fontWeight: "900",
+      letterSpacing: 1.3
+    },
+    expenseHeroValue: {
+      color: COLORS.orange,
+      fontSize: 27,
+      fontWeight: "900",
+      marginTop: 7
+    },
+    expenseCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 11,
+      marginBottom: 8,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    expenseIcon: {
+      width: 42,
+      height: 42,
+      borderRadius: 12,
+      backgroundColor: COLORS.bg2,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 9
+    },
+    expenseTitle: {
+      color: COLORS.white,
+      fontSize: 11,
+      fontWeight: "900"
+    },
+    expenseNote: {
+      color: COLORS.text,
+      fontSize: 8,
+      marginTop: 3
+    },
+    expenseDate: {
+      color: COLORS.muted,
+      fontSize: 7,
+      marginTop: 4
+    },
+    expenseAmount: {
+      color: COLORS.red,
+      fontSize: 11,
+      fontWeight: "900"
+    },
+    smallTrash: {
+      marginTop: 6
+    },
+    logoutButton: {
+      height: 46,
+      borderRadius: 13,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: "rgba(241,106,114,0.3)",
+      marginTop: 14,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 7
+    },
+    logoutText: {
+      color: COLORS.white,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    /* =========================
+       EMPTY
+       ========================= */
+
+    emptyBox: {
+      backgroundColor: COLORS.card,
+      borderRadius: 17,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      minHeight: 135,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      marginBottom: 10
+    },
+    emptyIcon: {
+      width: 58,
+      height: 58,
+      borderRadius: 18,
+      backgroundColor: COLORS.bg2,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 8
+    },
+    emptyTitle: {
+      color: COLORS.white,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    emptyText: {
+      color: COLORS.muted,
+      fontSize: 8,
+      textAlign: "center",
+      lineHeight: 14,
+      marginTop: 4
+    },
+    /* =========================
+       NAV
+       ========================= */
+
+    bottomNav: {
+      height: 73,
+      backgroundColor: COLORS.bg2,
+      borderTopWidth: 1,
+      borderTopColor: COLORS.border,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    navItem: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    navIcon: {
+      width: 37,
+      height: 30,
+      borderRadius: 10,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    navIconActive: {
+      backgroundColor: COLORS.card2,
+      borderWidth: 1,
+      borderColor: COLORS.border
+    },
+    navText: {
+      color: COLORS.muted,
+      fontSize: 7,
+      fontWeight: "800",
+      marginTop: 3
+    },
+    navTextActive: {
+      color: COLORS.goldLight
+    },
+    /* =========================
+       AUTH
+       ========================= */
+
+    authContainer: {
+      flexGrow: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20
+    },
+    authLogoWrap: {
+      alignItems: "center",
+      marginBottom: 22
+    },
+    logo: {
+      color: COLORS.goldLight,
+      fontSize: 13,
+      fontWeight: "900",
+      letterSpacing: 5
+    },
+    authBrand: {
+      color: COLORS.white,
+      fontSize: 34,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    authTagline: {
+      color: COLORS.muted,
+      fontSize: 9,
+      textAlign: "center",
+      marginTop: 6,
+      maxWidth: 290
+    },
+    authCard: {
+      width: "100%",
+      maxWidth: 420,
+      backgroundColor: COLORS.card,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 18
+    },
+    authTitle: {
+      color: COLORS.white,
+      fontSize: 23,
+      fontWeight: "900"
+    },
+    authSubtitle: {
+      color: COLORS.muted,
+      fontSize: 9,
+      marginTop: 4,
+      marginBottom: 18
+    },
+    input: {
+      height: 52,
+      backgroundColor: COLORS.bg2,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 13,
+      paddingHorizontal: 14,
+      color: COLORS.white,
+      fontSize: 11,
+      marginBottom: 10
+    },
+    authButton: {
+      height: 52,
+      borderRadius: 14,
+      backgroundColor: COLORS.gold,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 4
+    },
+    authButtonText: {
+      color: COLORS.bg,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    authSwitch: {
+      alignItems: "center",
+      marginTop: 15
+    },
+    authSwitchText: {
+      color: COLORS.goldLight,
+      fontSize: 9,
+      fontWeight: "800"
+    },
+    authMessage: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.bg2,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 11,
+      padding: 10,
+      marginBottom: 10,
+      gap: 7
+    },
+    authMessageText: {
+      flex: 1,
+      color: COLORS.text,
+      fontSize: 9,
+      lineHeight: 14
+    },
+    centerLoading: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    loadingText: {
+      color: COLORS.muted,
+      fontSize: 9,
+      marginTop: 8
+    },
+    /* =========================
+       MODALS
+       ========================= */
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.72)",
+      justifyContent: "flex-end"
+    },
+    modalKeyboard: {
+      width: "100%"
+    },
+    modalCard: {
+      width: "100%",
+      maxWidth: 520,
+      alignSelf: "center",
+      maxHeight: "91%",
+      backgroundColor: COLORS.bg2,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 16
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 14
+    },
+    modalTitle: {
+      color: COLORS.white,
+      fontSize: 20,
+      fontWeight: "900"
+    },
+    modalSubtitle: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 3
+    },
+    modalClose: {
+      width: 40,
+      height: 40,
+      borderRadius: 13,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    fieldLabel: {
+      color: COLORS.text,
+      fontSize: 9,
+      fontWeight: "900",
+      marginBottom: 5,
+      marginTop: 7
+    },
+    modalInput: {
+      height: 48,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 12,
+      color: COLORS.white,
+      paddingHorizontal: 13,
+      fontSize: 10,
+      marginBottom: 7
+    },
+    helperText: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginBottom: 7
+    },
+    categoryHint: {
+      backgroundColor: COLORS.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 10,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 7,
+      marginBottom: 7
+    },
+    categoryHintText: {
+      flex: 1,
+      color: COLORS.muted,
+      fontSize: 8,
+      lineHeight: 13
+    },
+    categorySelect: {
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      borderRadius: 10,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border
+    },
+    categorySelectActive: {
+      backgroundColor: COLORS.gold,
+      borderColor: COLORS.gold
+    },
+    categorySelectText: {
+      color: COLORS.text,
+      fontSize: 8,
+      fontWeight: "900"
+    },
+    deleteLargeButton: {
+      height: 48,
+      borderRadius: 13,
+      backgroundColor: COLORS.red,
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 7,
+      marginTop: 10
+    },
+    deleteLargeButtonText: {
+      color: COLORS.white,
+      fontSize: 11,
+      fontWeight: "900"
+    },
+    saveLargeButton: {
+      height: 50,
+      borderRadius: 13,
+      backgroundColor: COLORS.gold,
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 7,
+      marginTop: 10,
+      marginBottom: 4
+    },
+    saveLargeButtonText: {
+      color: COLORS.bg,
+      fontSize: 11,
+      fontWeight: "900"
+    },
+    inlineAddRow: {
+      flexDirection: "row",
+      gap: 8
+    },
+    squareGold: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      backgroundColor: COLORS.gold,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    categoryListRow: {
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: 14,
+      padding: 10,
+      marginBottom: 8,
+      flexDirection: "row",
+      alignItems: "center"
+    },
+    categoryIndex: {
+      width: 32,
+      height: 32,
+      borderRadius: 10,
+      backgroundColor: COLORS.bg2,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 9
+    },
+    categoryIndexText: {
+      color: COLORS.goldLight,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    categoryListName: {
+      color: COLORS.white,
+      flex: 1,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    /* =========================
+       RECEIPT
+       ========================= */
+
+    receiptBrandBox: {
+      alignItems: "center",
+      backgroundColor: COLORS.card,
+      borderRadius: 15,
+      padding: 13,
+      marginBottom: 10
+    },
+    receiptBrand: {
+      color: COLORS.goldLight,
+      fontSize: 13,
+      fontWeight: "900",
+      letterSpacing: 4
+    },
+    receiptDate: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 4
+    },
+    receiptRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 9
+    },
+    receiptItemName: {
+      color: COLORS.white,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    receiptItemMeta: {
+      color: COLORS.muted,
+      fontSize: 8,
+      marginTop: 3
+    },
+    receiptItemTotal: {
+      color: COLORS.goldLight,
+      fontSize: 10,
+      fontWeight: "900"
+    },
+    receiptDivider: {
+      height: 1,
+      backgroundColor: COLORS.border,
+      marginVertical: 7
+    },
+    receiptSummaryRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 6
+    },
+    receiptSummaryLabel: {
+      color: COLORS.muted,
+      fontSize: 9
+    },
+    receiptSummaryValue: {
+      color: COLORS.white,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    closeReceiptButton: {
+      height: 46,
+      borderRadius: 12,
+      backgroundColor: COLORS.card,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 13
+    },
+    closeReceiptText: {
+      color: COLORS.white,
+      fontSize: 10,
+      fontWeight: "900"
+    }
+  });
+  var _c, _c2, _c3, _c4, _c5, _c6, _c7;
+  $RefreshReg$(_c, "Icon");
+  $RefreshReg$(_c2, "SectionTitle");
+  $RefreshReg$(_c3, "StatCard");
+  $RefreshReg$(_c4, "EmptyState");
+  $RefreshReg$(_c5, "PrimaryButton");
+  $RefreshReg$(_c6, "AuthScreen");
+  $RefreshReg$(_c7, "App");
+});
