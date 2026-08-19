@@ -5,12 +5,19 @@ const connectDB = require('./db');
 
 const app = express();
 
-// MongoDB ga ulanish
-connectDB();
-
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Connect DB middleware for serverless
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ message: 'Database connection failed', error: err.message });
+  }
+});
 
 // Routes
 app.use('/api/products', require('./routes/products'));
@@ -44,4 +51,5 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = app;
+
 
