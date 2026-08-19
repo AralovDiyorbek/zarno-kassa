@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 // ==========================================
 // CONSTANTS & CONFIG
 // ==========================================
-const API = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API = process.env.EXPO_PUBLIC_API_URL || 'https://zarno-kassa.vercel.app/api';
 
 const COLORS = {
   bg: "#061521",
