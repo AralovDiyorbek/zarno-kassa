@@ -219,7 +219,9 @@ export default function App() {
       return await res.json();
     } catch (e) {
       console.error(`API Error [${method} ${endpoint}]:`, e);
-      Alert.alert('Xatolik', e.message);
+      if (method !== 'GET') {
+        Alert.alert('Xatolik', e.message || 'Tarmoq xatosi');
+      }
       return null;
     }
   };
@@ -486,7 +488,7 @@ export default function App() {
   };
 
   const deleteProduct = (id) => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.confirm) {
       if (window.confirm('Rostdan ham bu mahsulotni o\'chirmoqchimisiz?')) {
         fetchApi(`/products/${id}`, 'DELETE').then(res => {
           if (res) {
@@ -930,7 +932,7 @@ export default function App() {
                 color={COLORS.green} 
                 style={{ marginTop: 8 }}
                 onPress={() => {
-                  if (Platform.OS === 'web') {
+                  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.confirm) {
                     if (window.confirm("Qarzni to'liq yopmoqchimisiz?")) {
                       payDebt(item._id);
                     }
