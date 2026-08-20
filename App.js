@@ -1283,8 +1283,8 @@ export default function App() {
 
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.inputLabel}>Boshlang'ich qoldiq</Text>
-                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.stockQty} onChangeText={(t) => setProductForm({...productForm, stockQty: t})} editable={!editingProduct} />
+                <Text style={styles.inputLabel}>{editingProduct ? 'Qoldiq' : 'Boshlang\'ich qoldiq'}</Text>
+                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.stockQty} onChangeText={(t) => setProductForm({...productForm, stockQty: t})} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.inputLabel}>Minimal qoldiq (Ogohlantirish)</Text>
