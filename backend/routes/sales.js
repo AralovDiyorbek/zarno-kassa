@@ -27,23 +27,23 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET - Bitta sotuv
-router.get('/:id', async (req, res) => {
-  try {
-    const sale = await Sale.findById(req.params.id);
-    if (!sale) return res.status(404).json({ message: 'Sotuv topilmadi' });
-    res.json(sale);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 // GET - Nasiyalar (qarzlar ro'yxati)
 router.get('/debts', async (req, res) => {
   try {
     const debts = await Sale.find({ paymentType: 'nasiya', isPaid: false }).sort({ createdAt: -1 });
     const totalDebt = debts.reduce((sum, d) => sum + d.totalAmount, 0);
     res.json({ debts, totalDebt, count: debts.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET - Bitta sotuv
+router.get('/:id', async (req, res) => {
+  try {
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) return res.status(404).json({ message: 'Sotuv topilmadi' });
+    res.json(sale);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -253,7 +253,13 @@ export default function App() {
 
   const loadDebts = async () => {
     const data = await fetchApi('/sales/debts');
-    if (data) setDebts(data);
+    if (data && Array.isArray(data.debts)) {
+      setDebts(data.debts);
+    } else if (Array.isArray(data)) {
+      setDebts(data);
+    } else {
+      setDebts([]);
+    }
   };
 
   const loadReports = async () => {
@@ -910,34 +916,47 @@ export default function App() {
 
         {/* QARZ DAFTARI */}
         <SectionTitle title="Nasiyalar (Qarz daftari)" />
-        {debts.length === 0 ? (
-          <View style={styles.card}><Text style={{ color: COLORS.muted }}>Nasiyalar yo'q</Text></View>
+        {!debts || debts.length === 0 ? (
+          <View style={styles.card}><Text style={{ color: COLORS.muted }}>Faol nasiyalar yo'q</Text></View>
         ) : (
           debts.map((item) => (
             <View key={item._id} style={[styles.listItem, { flexDirection: 'column', alignItems: 'stretch' }]}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
                 <View>
-                  <Text style={styles.listTitle}>{item.customerName}</Text>
-                  {item.customerPhone ? <Text style={styles.listSubtitle}>{item.customerPhone}</Text> : null}
-                  <Text style={styles.listSubtitle}>{formatDate(item.createdAt)}</Text>
+                  <Text style={styles.listTitle}>👤 {item.customerName || 'Noma\'lum mijoz'}</Text>
+                  {item.customerPhone ? <Text style={styles.listSubtitle}>📞 {item.customerPhone}</Text> : null}
+                  <Text style={styles.listSubtitle}>📅 {formatDate(item.createdAt)}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={{ color: COLORS.red, fontWeight: 'bold', fontSize: 16 }}>{money(item.totalAmount - (item.paidAmount || 0))}</Text>
-                  <Text style={{ color: COLORS.muted, fontSize: 12 }}>Jami: {money(item.totalAmount)}</Text>
+                  <Text style={{ color: COLORS.muted, fontSize: 12 }}>Qarz summasi</Text>
                 </View>
               </View>
+
+              {/* NASIYAGA BERILGAN TOVARLAR RO'YXATI */}
+              {item.items && item.items.length > 0 ? (
+                <View style={{ backgroundColor: COLORS.bg2, borderRadius: 8, padding: 8, marginBottom: 8 }}>
+                  <Text style={{ color: COLORS.muted, fontSize: 11, marginBottom: 4 }}>Berilgan tovarlar:</Text>
+                  {item.items.map((prod, idx) => (
+                    <Text key={idx} style={{ color: COLORS.text, fontSize: 12 }}>
+                      • {prod.productName || prod.name} — {prod.quantity} dona x {money(prod.sellPrice)} = <Text style={{ color: COLORS.goldLight }}>{money(prod.subtotal || (prod.quantity * prod.sellPrice))}</Text>
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+
               <PrimaryButton 
                 title="Qarz yopildi (To'landi)" 
                 icon="checkmark-done" 
                 color={COLORS.green} 
-                style={{ marginTop: 8 }}
+                style={{ marginTop: 4 }}
                 onPress={() => {
                   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.confirm) {
-                    if (window.confirm("Qarzni to'liq yopmoqchimisiz?")) {
+                    if (window.confirm(`${item.customerName}ning ${money(item.totalAmount)} qarzini to'liq yopmoqchimisiz?`)) {
                       payDebt(item._id);
                     }
                   } else {
-                    Alert.alert("Tasdiqlash", "Qarzni to'liq yopmoqchimisiz?", [
+                    Alert.alert("Tasdiqlash", `${item.customerName}ning ${money(item.totalAmount)} qarzini to'liq yopmoqchimisiz?`, [
                       { text: "Yo'q", style: 'cancel' },
                       { text: "Ha", onPress: () => payDebt(item._id) }
                     ]);
@@ -1444,6 +1463,98 @@ export default function App() {
   );
 
   // ==========================================
+  // QARZ DAFTARI PAGE
+  // ==========================================
+  const renderQarz = () => {
+    const totalUnpaid = (Array.isArray(debts) ? debts : []).reduce((sum, d) => sum + (d.totalAmount - (d.paidAmount || 0)), 0);
+    return (
+      <View style={styles.pageContainer}>
+        <View style={styles.pageHeader}>
+          <Text style={styles.pageTitle}>Qarz daftari (Nasiyalar)</Text>
+          <View style={{ backgroundColor: COLORS.red + '20', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: COLORS.red }}>
+            <Text style={{ color: COLORS.red, fontWeight: 'bold', fontSize: 13 }}>Jami qarz: {money(totalUnpaid)}</Text>
+          </View>
+        </View>
+
+        <ScrollView style={{ flex: 1 }}>
+          {!debts || debts.length === 0 ? (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyStateIcon}>
+                <Icon name="journal-outline" size={48} color={COLORS.muted} />
+              </View>
+              <Text style={styles.emptyStateTitle}>Hozircha faol qarzlar yo'q</Text>
+              <Text style={styles.emptyStateSubtitle}>
+                Kassa bo'limida sotuv to'lov turini 'Nasiya' qilib amalga oshirsangiz, mijoz qarzi va berilgan tovarlar ro'yxati bu yerda avtomatik saqlanadi.
+              </Text>
+            </View>
+          ) : (
+            debts.map((item) => (
+              <View key={item._id} style={[styles.card, { marginBottom: 12, borderWidth: 1, borderColor: COLORS.red + '40' }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border, paddingBottom: 8 }}>
+                  <View>
+                    <Text style={{ color: COLORS.gold, fontSize: 16, fontWeight: '700' }}>👤 {item.customerName || 'Noma\'lum mijoz'}</Text>
+                    {item.customerPhone ? <Text style={{ color: COLORS.muted, fontSize: 12, marginTop: 2 }}>📞 {item.customerPhone}</Text> : null}
+                    <Text style={{ color: COLORS.muted, fontSize: 11, marginTop: 2 }}>📅 {formatDate(item.createdAt)}</Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={{ color: COLORS.red, fontWeight: '800', fontSize: 18 }}>{money(item.totalAmount - (item.paidAmount || 0))}</Text>
+                    <Text style={{ color: COLORS.muted, fontSize: 11 }}>Qarz summasi</Text>
+                  </View>
+                </View>
+
+                {/* NASIYAGA BERILGAN TOVARLAR RO'YXATI */}
+                <Text style={{ color: COLORS.text, fontWeight: '600', fontSize: 13, marginBottom: 6 }}>📦 Nasiyaga berilgan tovarlar:</Text>
+                <View style={{ backgroundColor: COLORS.bg2, borderRadius: 8, padding: 8, marginBottom: 12 }}>
+                  {item.items && item.items.length > 0 ? (
+                    item.items.map((prod, idx) => (
+                      <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderBottomWidth: idx < item.items.length - 1 ? 1 : 0, borderBottomColor: COLORS.border + '40' }}>
+                        <Text style={{ color: COLORS.text, fontSize: 13, flex: 1 }}>
+                          • {prod.productName || prod.name}
+                        </Text>
+                        <Text style={{ color: COLORS.muted, fontSize: 12, marginRight: 8 }}>
+                          {prod.quantity} dona x {money(prod.sellPrice)}
+                        </Text>
+                        <Text style={{ color: COLORS.goldLight, fontWeight: '600', fontSize: 13 }}>
+                          {money(prod.subtotal || (prod.quantity * prod.sellPrice))}
+                        </Text>
+                      </View>
+                    ))
+                  ) : (
+                    <Text style={{ color: COLORS.muted, fontSize: 12 }}>Mahsulotlar ko'rsatilmagan</Text>
+                  )}
+                </View>
+
+                {item.note ? (
+                  <Text style={{ color: COLORS.orange, fontSize: 12, fontStyle: 'italic', marginBottom: 8 }}>📝 Izoh: {item.note}</Text>
+                ) : null}
+
+                <PrimaryButton 
+                  title="Qarz yopildi (To'landi)" 
+                  icon="checkmark-done" 
+                  color={COLORS.green} 
+                  style={{ paddingVertical: 10 }}
+                  onPress={() => {
+                    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.confirm) {
+                      if (window.confirm(`${item.customerName}ning ${money(item.totalAmount)} qarzini to'liq yopmoqchimisiz?`)) {
+                        payDebt(item._id);
+                      }
+                    } else {
+                      Alert.alert("Tasdiqlash", `${item.customerName}ning ${money(item.totalAmount)} qarzini to'liq yopmoqchimisiz?`, [
+                        { text: "Yo'q", style: 'cancel' },
+                        { text: "Ha", onPress: () => payDebt(item._id) }
+                      ]);
+                    }
+                  }} 
+                />
+              </View>
+            ))
+          )}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  // ==========================================
   // BOTTOM NAVIGATION
   // ==========================================
   const renderBottomNav = () => (
@@ -1451,6 +1562,7 @@ export default function App() {
       {[
         { id: 'kassa', icon: 'cart-outline', label: 'Kassa' },
         { id: 'ombor', icon: 'cube-outline', label: 'Ombor' },
+        { id: 'qarz', icon: 'journal-outline', label: 'Qarz' },
         { id: 'monitoring', icon: 'pulse-outline', label: 'Monitoring' },
         { id: 'hisobot', icon: 'pie-chart-outline', label: 'Hisobot' },
         { id: 'xarajat', icon: 'wallet-outline', label: 'Xarajat' }
@@ -1496,6 +1608,7 @@ export default function App() {
       <View style={styles.mainContent}>
         {activeTab === 'kassa' && renderKassa()}
         {activeTab === 'ombor' && renderOmbor()}
+        {activeTab === 'qarz' && renderQarz()}
         {activeTab === 'monitoring' && renderMonitoring()}
         {activeTab === 'hisobot' && renderReport()}
         {activeTab === 'xarajat' && renderExpenses()}
