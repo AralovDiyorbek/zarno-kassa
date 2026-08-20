@@ -486,15 +486,27 @@ export default function App() {
   };
 
   const deleteProduct = (id) => {
-    Alert.alert('O\'chirish', 'Rostdan ham bu mahsulotni o\'chirmoqchimisiz?', [
-      { text: 'Bekor qilish', style: 'cancel' },
-      { text: 'O\'chirish', style: 'destructive', onPress: async () => {
-          const res = await fetchApi(`/products/${id}`, 'DELETE');
+    if (Platform.OS === 'web') {
+      if (window.confirm('Rostdan ham bu mahsulotni o\'chirmoqchimisiz?')) {
+        fetchApi(`/products/${id}`, 'DELETE').then(res => {
           if (res) {
             loadProducts();
+            loadReports();
           }
-      }}
-    ]);
+        });
+      }
+    } else {
+      Alert.alert('O\'chirish', 'Rostdan ham bu mahsulotni o\'chirmoqchimisiz?', [
+        { text: 'Bekor qilish', style: 'cancel' },
+        { text: 'O\'chirish', style: 'destructive', onPress: async () => {
+            const res = await fetchApi(`/products/${id}`, 'DELETE');
+            if (res) {
+              loadProducts();
+              loadReports();
+            }
+        }}
+      ]);
+    }
   };
 
   const saveCategory = async () => {
@@ -918,10 +930,16 @@ export default function App() {
                 color={COLORS.green} 
                 style={{ marginTop: 8 }}
                 onPress={() => {
-                  Alert.alert("Tasdiqlash", "Qarzni to'liq yopmoqchimisiz?", [
-                    { text: "Yo'q", style: 'cancel' },
-                    { text: "Ha", onPress: () => payDebt(item._id) }
-                  ]);
+                  if (Platform.OS === 'web') {
+                    if (window.confirm("Qarzni to'liq yopmoqchimisiz?")) {
+                      payDebt(item._id);
+                    }
+                  } else {
+                    Alert.alert("Tasdiqlash", "Qarzni to'liq yopmoqchimisiz?", [
+                      { text: "Yo'q", style: 'cancel' },
+                      { text: "Ha", onPress: () => payDebt(item._id) }
+                    ]);
+                  }
                 }} 
               />
             </View>
