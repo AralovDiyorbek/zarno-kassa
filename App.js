@@ -50,9 +50,21 @@ const money = (amount) => {
   return Number(amount).toLocaleString('ru-RU') + ' so\'m';
 };
 
+const isValidNumber = (val) => {
+  if (val === undefined || val === null || val === '') return false;
+  const str = val.toString().trim();
+  return /^\d+(\.\d+)?$/.test(str);
+};
+
+const cleanNumberInput = (val) => {
+  if (!val) return '';
+  return val.toString().replace(/[^0-9.]/g, '');
+};
+
 const parseNumber = (val) => {
   if (!val) return 0;
-  const num = Number(val.toString().replace(/[^0-9.-]+/g, ''));
+  const clean = cleanNumberInput(val);
+  const num = Number(clean);
   return isNaN(num) ? 0 : num;
 };
 
@@ -529,34 +541,71 @@ export default function App() {
   };
 
   const saveProduct = async () => {
+    // 1. Name validation
     if (!productForm.name || !productForm.name.trim()) {
-      Alert.alert('Xato', 'Mahsulot nomini kiriting');
+      Alert.alert('Xatolik', 'Mahsulot nomini kiriting!');
       return;
     }
-    const trimmedName = productForm.name.trim().toLowerCase();
+    const trimmedName = productForm.name.trim();
     const isDuplicate = products.some(p => 
-      p.name && p.name.trim().toLowerCase() === trimmedName && 
+      p.name && p.name.trim().toLowerCase() === trimmedName.toLowerCase() && 
       (!editingProduct || p._id !== editingProduct._id)
     );
     if (isDuplicate) {
       Alert.alert('Xatolik', 'Bunday nomli tovar allaqachon mavjud! Iltimos, boshqa nom kiriting.');
       return;
     }
-    if (productForm.costPrice === undefined || productForm.costPrice === '') {
-      Alert.alert('Xato', 'Kirim (tannarx) narxini kiriting');
+
+    // 2. Kirim narxi (costPrice) validation
+    if (!isValidNumber(productForm.costPrice)) {
+      Alert.alert('Xatolik', 'Kirim (tannarx) narxiga faqat to\'g\'ri musbat son kiriting (masalan: 15000)');
       return;
     }
-    if (productForm.sellPrice === undefined || productForm.sellPrice === '') {
-      Alert.alert('Xato', 'Sotish narxini kiriting');
+    const costNum = Number(cleanNumberInput(productForm.costPrice));
+
+    // 3. Sotish narxi (sellPrice) validation
+    if (!isValidNumber(productForm.sellPrice)) {
+      Alert.alert('Xatolik', 'Sotish narxiga faqat to\'g\'ri musbat son kiriting (masalan: 25000)');
       return;
+    }
+    const sellNum = Number(cleanNumberInput(productForm.sellPrice));
+    if (sellNum < costNum) {
+      Alert.alert('Ogohlantirish', 'Sotish narxi kirim narxidan kam bo\'lmasligi kerak!');
+      return;
+    }
+
+    // 4. Stock Qty validation
+    if (productForm.stockQty !== '' && productForm.stockQty !== undefined && !isValidNumber(productForm.stockQty)) {
+      Alert.alert('Xatolik', 'Qoldiq miqdoriga faqat raqam kiriting (masalan: 10)');
+      return;
+    }
+
+    // 5. Min Alert Qty validation
+    if (productForm.minAlertQty !== '' && productForm.minAlertQty !== undefined && !isValidNumber(productForm.minAlertQty)) {
+      Alert.alert('Xatolik', 'Minimal qoldiq miqdoriga faqat raqam kiriting (masalan: 2)');
+      return;
+    }
+
+    // 6. Barcode unique validation
+    if (productForm.barcode && productForm.barcode.trim()) {
+      const cleanBarcode = productForm.barcode.trim();
+      const duplicateBarcode = products.find(p => 
+        p.barcode && p.barcode.trim() === cleanBarcode && 
+        (!editingProduct || p._id !== editingProduct._id)
+      );
+      if (duplicateBarcode) {
+        Alert.alert('Xatolik', `Ushbu shtrix-kod (${cleanBarcode}) allaqachon "${duplicateBarcode.name}" mahsulotiga biriktirilgan!`);
+        return;
+      }
     }
 
     const payload = {
       ...productForm,
-      name: productForm.name.trim(),
+      name: trimmedName,
+      barcode: productForm.barcode ? productForm.barcode.trim() : '',
       categoryId: productForm.categoryId || (categories.length > 0 ? categories[0]._id : null),
-      costPrice: parseNumber(productForm.costPrice),
-      sellPrice: parseNumber(productForm.sellPrice),
+      costPrice: costNum,
+      sellPrice: sellNum,
       stockQty: parseNumber(productForm.stockQty),
       minAlertQty: parseNumber(productForm.minAlertQty)
     };
@@ -1336,8 +1385,8 @@ export default function App() {
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.modalBody}>
-            <Text style={styles.inputLabel}>Nomi *</Text>
-            <TextInput style={styles.input} placeholder="Nomi" placeholderTextColor={COLORS.muted} value={productForm.name} onChangeText={(t) => setProductForm({...productForm, name: t})} />
+            <Text style={styles.inputLabel}>Mahsulot nomi *</Text>
+            <TextInput style={styles.input} placeholder="Mahsulot nomini kiriting" placeholderTextColor={COLORS.muted} value={productForm.name} onChangeText={(t) => setProductForm({...productForm, name: t})} />
             
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <Text style={styles.inputLabel}>Kategoriya</Text>
@@ -1360,11 +1409,11 @@ export default function App() {
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.inputLabel}>Kirim narxi *</Text>
-                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.costPrice} onChangeText={(t) => setProductForm({...productForm, costPrice: t})} />
+                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.costPrice} onChangeText={(t) => setProductForm({...productForm, costPrice: cleanNumberInput(t)})} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.inputLabel}>Sotish narxi *</Text>
-                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.sellPrice} onChangeText={(t) => setProductForm({...productForm, sellPrice: t})} />
+                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.sellPrice} onChangeText={(t) => setProductForm({...productForm, sellPrice: cleanNumberInput(t)})} />
               </View>
             </View>
 
@@ -1408,11 +1457,11 @@ export default function App() {
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.inputLabel}>{editingProduct ? 'Qoldiq' : 'Boshlang\'ich qoldiq'}</Text>
-                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.stockQty} onChangeText={(t) => setProductForm({...productForm, stockQty: t})} />
+                <TextInput style={styles.input} placeholder="0" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.stockQty} onChangeText={(t) => setProductForm({...productForm, stockQty: cleanNumberInput(t)})} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.inputLabel}>Minimal qoldiq (Ogohlantirish)</Text>
-                <TextInput style={styles.input} placeholder="5" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.minAlertQty} onChangeText={(t) => setProductForm({...productForm, minAlertQty: t})} />
+                <TextInput style={styles.input} placeholder="5" keyboardType="numeric" placeholderTextColor={COLORS.muted} value={productForm.minAlertQty} onChangeText={(t) => setProductForm({...productForm, minAlertQty: cleanNumberInput(t)})} />
               </View>
             </View>
 
