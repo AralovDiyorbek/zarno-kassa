@@ -1731,13 +1731,12 @@ export default function App() {
       
       {/* GLOBAL HEADER */}
       <View style={styles.globalHeader}>
-        <Image 
-          source={require('./assets/zarno-kassa-icon.png')} 
-          style={{ width: 40, height: 40, resizeMode: 'contain', marginRight: 12 }} 
-        />
+        <View style={styles.logoBox}>
+          <Icon name="cube" size={24} color={COLORS.bg} />
+        </View>
         <View>
-          <Text style={styles.logoText}>ZARNO <Text style={{ color: COLORS.goldLight }}>KASSA</Text></Text>
-          <Text style={styles.logoSubtitle}>Savdo & Ombor Tizimi</Text>
+          <Text style={styles.logoText}>ZARNO <Text style={{ color: COLORS.goldLight }}>TECH</Text></Text>
+          <Text style={styles.logoSubtitle}>Kassa Tizimi</Text>
         </View>
       </View>
       
