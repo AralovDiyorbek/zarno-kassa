@@ -18,6 +18,15 @@ router.get('/', async (req, res) => {
       ];
       categories = await Category.insertMany(defaults);
     }
+    
+    // Sort so "Boshqa aksessuarlar" / "Boshqa..." is always at the end
+    categories.sort((a, b) => {
+      const isB = (name) => (name || '').toLowerCase().includes('boshqa');
+      if (isB(a.name) && !isB(b.name)) return 1;
+      if (!isB(a.name) && isB(b.name)) return -1;
+      return 0;
+    });
+
     res.json(categories);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -28,7 +37,20 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { name, icon, color } = req.body;
-    const category = new Category({ name, icon: icon || '📦', color: color || '#f59e0b' });
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'Kategoriya nomi kiritilmadi' });
+    }
+
+    const trimmedName = name.trim();
+    // Check if category already exists (case-insensitive)
+    const existing = await Category.findOne({
+      name: { $regex: new RegExp(`^${trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') }
+    });
+    if (existing) {
+      return res.json(existing);
+    }
+
+    const category = new Category({ name: trimmedName, icon: icon || '📦', color: color || '#f59e0b' });
     await category.save();
     res.status(201).json(category);
   } catch (err) {

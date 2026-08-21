@@ -321,14 +321,87 @@ export default function App() {
   // ==========================================
   // KASSA LOGIC
   // ==========================================
+  // ==========================================
+  // KASSA & CATEGORY LOGIC
+  // ==========================================
+  // 1. Deduplicated & Sorted Categories ("Boshqa aksessuarlar" is always at the end)
+  const sortedCategories = useMemo(() => {
+    if (!categories || !Array.isArray(categories)) return [];
+
+    const map = new Map();
+    categories.forEach(cat => {
+      if (!cat || !cat.name) return;
+      const normalized = cat.name.trim().toLowerCase();
+      if (!map.has(normalized)) {
+        map.set(normalized, {
+          ...cat,
+          name: cat.name.trim(),
+          allIds: [cat._id]
+        });
+      } else {
+        const existing = map.get(normalized);
+        if (cat._id && !existing.allIds.includes(cat._id)) {
+          existing.allIds.push(cat._id);
+        }
+      }
+    });
+
+    const list = Array.from(map.values());
+
+    const isBoshqa = (name) => {
+      const n = (name || '').toLowerCase();
+      return n.includes('boshqa') || n.includes('other');
+    };
+
+    return list.sort((a, b) => {
+      const aIsB = isBoshqa(a.name);
+      const bIsB = isBoshqa(b.name);
+      if (aIsB && !bIsB) return 1;
+      if (!aIsB && bIsB) return -1;
+      return a.name.localeCompare(b.name, 'uz', { sensitivity: 'base' });
+    });
+  }, [categories]);
+
+  // Selected Category Object
+  const selectedCatObj = useMemo(() => {
+    if (!selectedCategoryId) return null;
+    return sortedCategories.find(c => c._id === selectedCategoryId || (c.allIds && c.allIds.includes(selectedCategoryId))) || null;
+  }, [selectedCategoryId, sortedCategories]);
+
+  // Filtered Products for Kassa (Robust Search & Category Filter)
   const filteredProducts = useMemo(() => {
+    const q = searchQuery ? searchQuery.trim().toLowerCase() : '';
+
     return products.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            (p.barcode && p.barcode.includes(searchQuery));
-      const matchesCat = selectedCategoryId ? p.categoryId === selectedCategoryId : true;
+      if (!p) return false;
+
+      // 1. Search Query Filter
+      let matchesSearch = true;
+      if (q) {
+        const pName = safeText(p.name).toLowerCase();
+        const pBarcode = safeText(p.barcode).toLowerCase();
+        const pCatName = safeText(p.categoryName).toLowerCase();
+        const pDesc = safeText(p.description).toLowerCase();
+
+        matchesSearch = pName.includes(q) || pBarcode.includes(q) || pCatName.includes(q) || pDesc.includes(q);
+      }
+
+      // 2. Category Filter
+      let matchesCat = true;
+      if (selectedCatObj) {
+        const prodCatId = typeof p.categoryId === 'object' ? p.categoryId?._id : p.categoryId;
+        const prodCatName = (typeof p.categoryId === 'object' ? p.categoryId?.name : (p.categoryName || '')).trim().toLowerCase();
+        const selCatName = selectedCatObj.name.trim().toLowerCase();
+
+        const matchById = prodCatId ? selectedCatObj.allIds.includes(prodCatId) : false;
+        const matchByName = prodCatName ? prodCatName === selCatName : false;
+
+        matchesCat = matchById || matchByName;
+      }
+
       return matchesSearch && matchesCat;
     });
-  }, [products, searchQuery, selectedCategoryId]);
+  }, [products, searchQuery, selectedCatObj]);
 
   const addToCart = (product) => {
     if (product.stockQty <= 0) {
@@ -458,6 +531,15 @@ export default function App() {
   const saveProduct = async () => {
     if (!productForm.name || !productForm.name.trim()) {
       Alert.alert('Xato', 'Mahsulot nomini kiriting');
+      return;
+    }
+    const trimmedName = productForm.name.trim().toLowerCase();
+    const isDuplicate = products.some(p => 
+      p.name && p.name.trim().toLowerCase() === trimmedName && 
+      (!editingProduct || p._id !== editingProduct._id)
+    );
+    if (isDuplicate) {
+      Alert.alert('Xatolik', 'Bunday nomli tovar allaqachon mavjud! Iltimos, boshqa nom kiriting.');
       return;
     }
     if (productForm.costPrice === undefined || productForm.costPrice === '') {
@@ -609,21 +691,24 @@ export default function App() {
       <View style={styles.kassaCategories}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
           <TouchableOpacity
-            style={[styles.catPill, !selectedCategoryId && styles.catPillActive]}
+            style={[styles.catPill, !selectedCatObj && styles.catPillActive]}
             onPress={() => setSelectedCategoryId(null)}
           >
-            <Text style={[styles.catPillText, !selectedCategoryId && styles.catPillTextActive]}>Barchasi</Text>
+            <Text style={[styles.catPillText, !selectedCatObj && styles.catPillTextActive]}>Barchasi</Text>
           </TouchableOpacity>
-          {categories.map(cat => (
-            <TouchableOpacity
-              key={cat._id}
-              style={[styles.catPill, selectedCategoryId === cat._id && styles.catPillActive, { borderColor: cat.color }]}
-              onPress={() => setSelectedCategoryId(cat._id)}
-            >
-              <Icon name={cat.icon} size={16} color={selectedCategoryId === cat._id ? COLORS.bg : cat.color} style={{ marginRight: 6 }} />
-              <Text style={[styles.catPillText, selectedCategoryId === cat._id && styles.catPillTextActive]}>{cat.name}</Text>
-            </TouchableOpacity>
-          ))}
+          {sortedCategories.map(cat => {
+            const isActive = selectedCatObj && selectedCatObj.name.toLowerCase() === cat.name.toLowerCase();
+            return (
+              <TouchableOpacity
+                key={cat._id}
+                style={[styles.catPill, isActive && styles.catPillActive, { borderColor: cat.color || COLORS.gold }]}
+                onPress={() => setSelectedCategoryId(isActive ? null : cat._id)}
+              >
+                <Icon name={cat.icon || 'cube-outline'} size={16} color={isActive ? COLORS.bg : (cat.color || COLORS.gold)} style={{ marginRight: 6 }} />
+                <Text style={[styles.catPillText, isActive && styles.catPillTextActive]}>{cat.name}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -1261,13 +1346,13 @@ export default function App() {
               </TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              {categories.map(c => (
+              {sortedCategories.map(c => (
                 <TouchableOpacity 
                   key={c._id} 
-                  style={[styles.modalCatBtn, productForm.categoryId === c._id && { borderColor: COLORS.gold, backgroundColor: COLORS.gold + '20' }]}
+                  style={[styles.modalCatBtn, (productForm.categoryId === c._id || (c.allIds && c.allIds.includes(productForm.categoryId))) && { borderColor: COLORS.gold, backgroundColor: COLORS.gold + '20' }]}
                   onPress={() => setProductForm({...productForm, categoryId: c._id})}
                 >
-                  <Text style={[styles.modalCatText, productForm.categoryId === c._id && { color: COLORS.gold }]}>{c.name}</Text>
+                  <Text style={[styles.modalCatText, (productForm.categoryId === c._id || (c.allIds && c.allIds.includes(productForm.categoryId))) && { color: COLORS.gold }]}>{c.name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>

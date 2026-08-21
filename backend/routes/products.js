@@ -45,12 +45,21 @@ router.get('/:id', async (req, res) => {
 const mongoose = require('mongoose');
 
 // POST - Yangi tovar qo'shish
+// POST - Yangi tovar qo'shish
 router.post('/', async (req, res) => {
   try {
     const { name, categoryId, costPrice, sellPrice, stockQty, barcode, minAlertQty, unit, description } = req.body;
 
     if (!name || costPrice === undefined || sellPrice === undefined) {
       return res.status(400).json({ message: 'Nomi, kirim narxi va sotish narxi majburiy' });
+    }
+
+    const trimmedName = name.trim();
+    const existing = await Product.findOne({
+      name: { $regex: new RegExp(`^${trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') }
+    });
+    if (existing) {
+      return res.status(400).json({ message: 'Bunday nomli tovar allaqachon mavjud' });
     }
 
     const cleanCategoryId = (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) ? categoryId : null;
@@ -61,7 +70,7 @@ router.post('/', async (req, res) => {
     }
 
     const product = new Product({
-      name: name.trim(),
+      name: trimmedName,
       categoryId: cleanCategoryId,
       categoryName,
       costPrice: Number(costPrice) || 0,
@@ -96,7 +105,19 @@ router.put('/:id', async (req, res) => {
       categoryName,
       categoryId: cleanCategoryId,
     };
-    if (name !== undefined) updateData.name = name.trim();
+
+    if (name !== undefined) {
+      const trimmedName = name.trim();
+      const existing = await Product.findOne({
+        _id: { $ne: req.params.id },
+        name: { $regex: new RegExp(`^${trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') }
+      });
+      if (existing) {
+        return res.status(400).json({ message: 'Bunday nomli tovar allaqachon mavjud' });
+      }
+      updateData.name = trimmedName;
+    }
+
     if (costPrice !== undefined) updateData.costPrice = Number(costPrice) || 0;
     if (sellPrice !== undefined) updateData.sellPrice = Number(sellPrice) || 0;
     if (stockQty !== undefined) updateData.stockQty = Number(stockQty) || 0;
