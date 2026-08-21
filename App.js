@@ -25,20 +25,20 @@ import { Ionicons } from '@expo/vector-icons';
 const API = process.env.EXPO_PUBLIC_API_URL || 'https://zarno-kassa.vercel.app/api';
 
 const COLORS = {
-  bg: "#061521",
-  bg2: "#091B29",
-  card: "#10283A",
-  card2: "#143247",
-  border: "#27475B",
-  gold: "#D9A735",
-  goldLight: "#F3C95C",
+  bg: "#06101e",
+  bg2: "#0d1f35",
+  card: "#112240",
+  card2: "#163054",
+  border: "rgba(255, 255, 255, 0.08)",
+  gold: "#f59e0b",
+  goldLight: "#fcd34d",
   white: "#FFFFFF",
-  text: "#EAF2F7",
-  muted: "#8FA8B9",
-  green: "#35CF91",
-  red: "#F16A72",
-  orange: "#F0A252",
-  blue: "#5BA7FF"
+  text: "#e2e8f0",
+  muted: "#94a3b8",
+  green: "#10b981",
+  red: "#ef4444",
+  orange: "#f59e0b",
+  blue: "#3b82f6"
 };
 
 const { width, height } = Dimensions.get('window');
@@ -1766,7 +1766,14 @@ export default function App() {
 // STYLES
 // ==========================================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
+  container: { 
+    flex: 1, 
+    backgroundColor: COLORS.bg,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 480 : '100%',
+    alignSelf: 'center',
+    boxShadow: Platform.OS === 'web' ? '0 0 40px rgba(0,0,0,0.4)' : undefined
+  },
   loadingContainer: { flex: 1, backgroundColor: COLORS.bg, justifyContent: 'center', alignItems: 'center' },
   mainContent: { flex: 1 },
   pageContainer: { flex: 1 },
