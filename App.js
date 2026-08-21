@@ -14,7 +14,8 @@ import {
   Platform,
   Dimensions,
   FlatList,
-  StatusBar
+  StatusBar,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -1730,12 +1731,13 @@ export default function App() {
       
       {/* GLOBAL HEADER */}
       <View style={styles.globalHeader}>
-        <View style={styles.logoBox}>
-          <Icon name="cube" size={24} color={COLORS.bg} />
-        </View>
+        <Image 
+          source={require('./assets/zarno-kassa-icon.png')} 
+          style={{ width: 40, height: 40, resizeMode: 'contain', marginRight: 12 }} 
+        />
         <View>
-          <Text style={styles.logoText}>ZARNO <Text style={{ color: COLORS.goldLight }}>TECH</Text></Text>
-          <Text style={styles.logoSubtitle}>Kassa Tizimi</Text>
+          <Text style={styles.logoText}>ZARNO <Text style={{ color: COLORS.goldLight }}>KASSA</Text></Text>
+          <Text style={styles.logoSubtitle}>Savdo & Ombor Tizimi</Text>
         </View>
       </View>
       

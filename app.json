@@ -8,6 +8,9 @@
     "android": {
       "package": "com.abdushukurov.zarnokassa"
     },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "extra": {
       "eas": {
         "projectId": "1de6233b-fd20-498e-af51-0fadf207e95d"
