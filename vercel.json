@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "buildCommand": "node build_web.js",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://zarno-kassa.vercel.app/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

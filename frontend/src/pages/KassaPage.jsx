@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../api';
 import { useApp } from '../context/AppContext';
 import AddProductModal from '../components/AddProductModal';
@@ -6,16 +6,11 @@ import CartModal from '../components/CartModal';
 
 const fmt = n => Number(n).toLocaleString('uz-UZ');
 
-const BoxIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-  </svg>
-);
-
 export default function KassaPage() {
   const { addToCart, cart, cartCount, showToast } = useApp();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCatId, setSelectedCatId] = useState(null);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -24,8 +19,12 @@ export default function KassaPage() {
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get('/products', { params: { search: search || undefined } });
-      setProducts(res.data);
+      const [pRes, cRes] = await Promise.all([
+        api.get('/products', { params: { search: search || undefined } }),
+        api.get('/categories')
+      ]);
+      setProducts(pRes.data);
+      setCategories(cRes.data);
     } catch {
       showToast('Tovarlarni yuklashda xato', 'error');
     } finally {
@@ -37,6 +36,50 @@ export default function KassaPage() {
     const timer = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timer);
   }, [fetchProducts]);
+
+  const sortedCategories = useMemo(() => {
+    if (!categories || !Array.isArray(categories)) return [];
+    const map = new Map();
+    categories.forEach(cat => {
+      if (!cat || !cat.name) return;
+      const norm = cat.name.trim().toLowerCase();
+      if (!map.has(norm)) {
+        map.set(norm, { ...cat, name: cat.name.trim(), allIds: [cat._id] });
+      } else {
+        const existing = map.get(norm);
+        if (cat._id && !existing.allIds.includes(cat._id)) {
+          existing.allIds.push(cat._id);
+        }
+      }
+    });
+    const list = Array.from(map.values());
+    const isBoshqa = (name) => (name || '').toLowerCase().includes('boshqa');
+    return list.sort((a, b) => {
+      if (isBoshqa(a.name) && !isBoshqa(b.name)) return 1;
+      if (!isBoshqa(a.name) && isBoshqa(b.name)) return -1;
+      return a.name.localeCompare(b.name, 'uz', { sensitivity: 'base' });
+    });
+  }, [categories]);
+
+  const selectedCatObj = useMemo(() => {
+    if (!selectedCatId) return null;
+    return sortedCategories.find(c => c._id === selectedCatId || (c.allIds && c.allIds.includes(selectedCatId))) || null;
+  }, [selectedCatId, sortedCategories]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      if (!p) return false;
+      if (selectedCatObj) {
+        const prodCatId = typeof p.categoryId === 'object' ? p.categoryId?._id : p.categoryId;
+        const prodCatName = (typeof p.categoryId === 'object' ? p.categoryId?.name : (p.categoryName || '')).trim().toLowerCase();
+        const selCatName = selectedCatObj.name.trim().toLowerCase();
+        const matchId = prodCatId ? selectedCatObj.allIds.includes(prodCatId) : false;
+        const matchName = prodCatName ? prodCatName === selCatName : false;
+        if (!matchId && !matchName) return false;
+      }
+      return true;
+    });
+  }, [products, selectedCatObj]);
 
   const handleAddToCart = (product) => {
     if (product.stockQty === 0) {
@@ -77,24 +120,46 @@ export default function KassaPage() {
           value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
+      {/* Category Pills */}
+      <div className="filter-bar" style={{ marginBottom: 16, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 4 }}>
+        <button
+          className={`filter-chip${!selectedCatObj ? ' active' : ''}`}
+          onClick={() => setSelectedCatId(null)}
+        >
+          Barchasi
+        </button>
+        {sortedCategories.map(cat => {
+          const isActive = selectedCatObj && selectedCatObj.name.toLowerCase() === cat.name.toLowerCase();
+          return (
+            <button
+              key={cat._id}
+              className={`filter-chip${isActive ? ' active' : ''}`}
+              onClick={() => setSelectedCatId(isActive ? null : cat._id)}
+            >
+              {cat.name}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Products List */}
       <div className="section-header">
         <div>
           <div className="section-title">Tovarlar</div>
-          <div className="section-count">{products.length} ta</div>
+          <div className="section-count">{filteredProducts.length} ta</div>
         </div>
         <span className="badge badge-green">Omborda bor</span>
       </div>
 
       {loading ? (
         <div className="spinner" />
-      ) : products.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: 48, marginBottom: 8 }}>📦</div>
           <p>Tovar topilmadi</p>
         </div>
       ) : (
-        products.map(product => (
+        filteredProducts.map(product => (
           <div key={product._id} className="product-card" onClick={() => handleAddToCart(product)}
             style={{ opacity: product.stockQty === 0 ? 0.5 : 1 }}>
             <div className="product-icon">📦</div>
