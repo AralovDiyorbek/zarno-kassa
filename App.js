@@ -43,6 +43,21 @@ const COLORS = {
 
 const { width, height } = Dimensions.get('window');
 
+// Responsive breakpoints
+const isDesktop = () => {
+  const w = Dimensions.get('window').width;
+  return Platform.OS === 'web' && w >= 1024;
+};
+const isTablet = () => {
+  const w = Dimensions.get('window').width;
+  return Platform.OS === 'web' && w >= 768 && w < 1024;
+};
+const isMobile = () => {
+  const w = Dimensions.get('window').width;
+  return Platform.OS !== 'web' || w < 768;
+};
+
+
 // ==========================================
 // HELPER FUNCTIONS
 // ==========================================
@@ -151,12 +166,21 @@ const PrimaryButton = ({ title, onPress, icon, color = COLORS.gold, disabled = f
 // MAIN APP COMPONENT
 // ==========================================
 export default function App() {
-  // --- TABS ---
-  // kassa | ombor | kirim | hisobot | xarajat
-  const [activeTab, setActiveTab] = useState('kassa');
-  const [monitoringTab, setMonitoringTab] = useState('sotuvlar'); // 'kirim' or 'sotuvlar'
+  // --- RESPONSIVE ---
+  const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
+  useEffect(() => {
+    const sub = Dimensions.addEventListener('change', ({ window }) => {
+      setWindowWidth(window.width);
+    });
+    return () => sub?.remove();
+  }, []);
+  const desktop = Platform.OS === 'web' && windowWidth >= 1024;
+  const tablet  = Platform.OS === 'web' && windowWidth >= 768 && windowWidth < 1024;
 
-  // --- GLOBAL STATE ---
+  // --- TABS ---
+  const [activeTab, setActiveTab] = useState('kassa');
+  const [monitoringTab, setMonitoringTab] = useState('sotuvlar');
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
@@ -784,7 +808,8 @@ export default function App() {
             <FlatList
               data={filteredProducts}
               keyExtractor={item => item._id}
-              numColumns={2}
+              numColumns={desktop ? 4 : tablet ? 3 : 2}
+              key={desktop ? 'desktop' : tablet ? 'tablet' : 'mobile'}
               contentContainerStyle={styles.productsGrid}
               renderItem={({ item }) => (
                 <TouchableOpacity 
@@ -805,49 +830,99 @@ export default function App() {
           )}
         </View>
 
-        {/* Cart Sidebar */}
+        {/* Cart Sidebar - New Design */}
         <View style={styles.cartSidebar}>
-          <Text style={styles.cartTitle}>Savatcha</Text>
+          {/* Cart Header */}
+          <View style={styles.cartHeader}>
+            <View style={styles.cartHeaderLeft}>
+              <View style={styles.cartIconBadge}>
+                <Icon name="cart" size={16} color={COLORS.bg} />
+              </View>
+              <Text style={styles.cartTitle}>Savatcha</Text>
+            </View>
+            {cart.length > 0 && (
+              <View style={styles.cartCountBadge}>
+                <Text style={styles.cartCountText}>{cart.reduce((s, i) => s + i.quantity, 0)}</Text>
+              </View>
+            )}
+          </View>
+
           {cart.length === 0 ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Icon name="cart-outline" size={48} color={COLORS.muted} />
-              <Text style={{ color: COLORS.muted, marginTop: 12 }}>Savatcha bo'sh</Text>
+            /* Empty state */
+            <View style={styles.cartEmpty}>
+              <View style={styles.cartEmptyIconWrap}>
+                <Icon name="cart-outline" size={40} color={COLORS.gold} />
+              </View>
+              <Text style={styles.cartEmptyTitle}>Savatcha bo'sh</Text>
+              <Text style={styles.cartEmptySubtitle}>Mahsulot tanlang</Text>
             </View>
           ) : (
             <>
+              {/* Cart Items */}
               <FlatList
                 data={cart}
                 keyExtractor={item => item._id}
                 style={{ flex: 1 }}
-                renderItem={({ item }) => (
-                  <View style={styles.cartItem}>
+                contentContainerStyle={{ padding: 10 }}
+                renderItem={({ item, index }) => (
+                  <View style={styles.cartItemCard}>
+                    {/* Item number badge */}
+                    <View style={styles.cartItemNum}>
+                      <Text style={styles.cartItemNumText}>{index + 1}</Text>
+                    </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.cartItemName} numberOfLines={1}>{item.name}</Text>
-                      <Text style={styles.cartItemPrice}>{money(item.sellPrice)}</Text>
+                      <Text style={styles.cartItemPrice}>{money(item.sellPrice)} × {item.quantity}</Text>
                     </View>
+                    {/* Total for item */}
+                    <View style={{ alignItems: 'flex-end', marginRight: 8 }}>
+                      <Text style={styles.cartItemTotal}>{money(item.sellPrice * item.quantity)}</Text>
+                    </View>
+                    {/* Qty controls */}
                     <View style={styles.qtyControls}>
                       <TouchableOpacity style={styles.qtyBtn} onPress={() => updateCartItemQty(item._id, -1)}>
-                        <Icon name="remove" size={16} color={COLORS.white} />
+                        <Icon name="remove" size={14} color={COLORS.text} />
                       </TouchableOpacity>
                       <Text style={styles.qtyText}>{item.quantity}</Text>
                       <TouchableOpacity style={styles.qtyBtn} onPress={() => updateCartItemQty(item._id, 1)}>
-                        <Icon name="add" size={16} color={COLORS.white} />
+                        <Icon name="add" size={14} color={COLORS.text} />
                       </TouchableOpacity>
                     </View>
                   </View>
                 )}
               />
+
+              {/* Cart Footer */}
               <View style={styles.cartFooter}>
-                <View style={styles.cartRow}>
-                  <Text style={styles.cartLabel}>Jami:</Text>
-                  <Text style={styles.cartValue}>{money(cartTotal)}</Text>
+                {/* Divider line */}
+                <View style={styles.cartDivider} />
+                {/* Summary rows */}
+                <View style={styles.cartSummaryRow}>
+                  <Text style={styles.cartSummaryLabel}>Tovarlar</Text>
+                  <Text style={styles.cartSummaryValue}>{cart.reduce((s, i) => s + i.quantity, 0)} ta</Text>
                 </View>
-                <PrimaryButton 
-                  title="To'lov qilish" 
-                  icon="wallet-outline" 
+                <View style={styles.cartSummaryRow}>
+                  <Text style={styles.cartSummaryLabel}>Jami summa</Text>
+                  <Text style={styles.cartTotalValue}>{money(cartTotal)}</Text>
+                </View>
+                {/* Clear cart */}
+                <TouchableOpacity
+                  style={styles.cartClearBtn}
+                  onPress={() => setCart([])}
+                >
+                  <Icon name="trash-outline" size={14} color={COLORS.red} />
+                  <Text style={styles.cartClearText}>Tozalash</Text>
+                </TouchableOpacity>
+                {/* Checkout button */}
+                <TouchableOpacity
+                  style={styles.cartCheckoutBtn}
                   onPress={() => setCheckoutModalVisible(true)}
-                  style={{ marginTop: 12 }}
-                />
+                  activeOpacity={0.85}
+                >
+                  <Icon name="wallet-outline" size={18} color={COLORS.bg} />
+                  <Text style={styles.cartCheckoutText}>To'lov qilish</Text>
+                  <Text style={styles.cartCheckoutAmount}>{money(cartTotal)}</Text>
+                </TouchableOpacity>
               </View>
             </>
           )}
@@ -855,6 +930,7 @@ export default function App() {
       </View>
     </View>
   );
+
 
   const renderOmbor = () => (
     <View style={styles.pageContainer}>
@@ -1704,8 +1780,8 @@ export default function App() {
       ].map(tab => {
         const isActive = activeTab === tab.id;
         return (
-          <TouchableOpacity key={tab.id} style={styles.navItem} onPress={() => setActiveTab(tab.id)}>
-            <Icon name={tab.icon} size={24} color={isActive ? COLORS.gold : COLORS.muted} />
+          <TouchableOpacity key={tab.id} style={[styles.navItem, isActive && styles.navItemActive]} onPress={() => setActiveTab(tab.id)}>
+            <Icon name={tab.icon} size={22} color={isActive ? COLORS.gold : COLORS.muted} />
             <Text style={[styles.navText, isActive && styles.navTextActive]}>{tab.label}</Text>
           </TouchableOpacity>
         );
@@ -1726,30 +1802,89 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, desktop && styles.containerDesktop]}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
-      
-      {/* GLOBAL HEADER */}
-      <View style={styles.globalHeader}>
-        <View style={styles.logoBox}>
-          <Icon name="cube" size={24} color={COLORS.bg} />
-        </View>
-        <View>
-          <Text style={styles.logoText}>ZARNO <Text style={{ color: COLORS.goldLight }}>TECH</Text></Text>
-          <Text style={styles.logoSubtitle}>Kassa Tizimi</Text>
-        </View>
-      </View>
-      
-      <View style={styles.mainContent}>
-        {activeTab === 'kassa' && renderKassa()}
-        {activeTab === 'ombor' && renderOmbor()}
-        {activeTab === 'qarz' && renderQarz()}
-        {activeTab === 'monitoring' && renderMonitoring()}
-        {activeTab === 'hisobot' && renderReport()}
-        {activeTab === 'xarajat' && renderExpenses()}
-      </View>
 
-      {renderBottomNav()}
+      {/* DESKTOP / TABLET: Sidebar layout */}
+      {(desktop || tablet) ? (
+        <View style={styles.desktopLayout}>
+          {/* Sidebar */}
+          <View style={[styles.sidebar, tablet && styles.sidebarTablet]}>
+            {/* Logo */}
+            <View style={styles.sidebarLogo}>
+              <View style={styles.logoBox}>
+                <Icon name="cube" size={22} color={COLORS.bg} />
+              </View>
+              {desktop && (
+                <View>
+                  <Text style={styles.logoText}>ZARNO <Text style={{ color: COLORS.goldLight }}>TECH</Text></Text>
+                  <Text style={styles.logoSubtitle}>Kassa Tizimi</Text>
+                </View>
+              )}
+            </View>
+            {/* Sidebar nav items */}
+            {[
+              { id: 'kassa',      icon: 'cart-outline',      label: 'Kassa' },
+              { id: 'ombor',      icon: 'cube-outline',      label: 'Ombor' },
+              { id: 'qarz',       icon: 'journal-outline',   label: 'Qarz' },
+              { id: 'monitoring', icon: 'pulse-outline',     label: 'Monitoring' },
+              { id: 'hisobot',    icon: 'pie-chart-outline', label: 'Hisobot' },
+              { id: 'xarajat',   icon: 'wallet-outline',    label: 'Xarajat' },
+            ].map(tab => {
+              const isActive = activeTab === tab.id;
+              return (
+                <TouchableOpacity
+                  key={tab.id}
+                  style={[styles.sidebarItem, isActive && styles.sidebarItemActive]}
+                  onPress={() => setActiveTab(tab.id)}
+                >
+                  <Icon name={tab.icon} size={20} color={isActive ? COLORS.gold : COLORS.muted} />
+                  {desktop && (
+                    <Text style={[styles.sidebarLabel, isActive && styles.sidebarLabelActive]}>
+                      {tab.label}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Main content */}
+          <ScrollView style={styles.desktopContent} contentContainerStyle={{ flexGrow: 1 }}>
+            {activeTab === 'kassa'      && renderKassa()}
+            {activeTab === 'ombor'      && renderOmbor()}
+            {activeTab === 'qarz'       && renderQarz()}
+            {activeTab === 'monitoring' && renderMonitoring()}
+            {activeTab === 'hisobot'    && renderReport()}
+            {activeTab === 'xarajat'   && renderExpenses()}
+          </ScrollView>
+        </View>
+      ) : (
+        /* MOBILE: Top header + bottom nav layout */
+        <>
+          {/* GLOBAL HEADER */}
+          <View style={styles.globalHeader}>
+            <View style={styles.logoBox}>
+              <Icon name="cube" size={24} color={COLORS.bg} />
+            </View>
+            <View>
+              <Text style={styles.logoText}>ZARNO <Text style={{ color: COLORS.goldLight }}>TECH</Text></Text>
+              <Text style={styles.logoSubtitle}>Kassa Tizimi</Text>
+            </View>
+          </View>
+
+          <View style={styles.mainContent}>
+            {activeTab === 'kassa'      && renderKassa()}
+            {activeTab === 'ombor'      && renderOmbor()}
+            {activeTab === 'qarz'       && renderQarz()}
+            {activeTab === 'monitoring' && renderMonitoring()}
+            {activeTab === 'hisobot'    && renderReport()}
+            {activeTab === 'xarajat'   && renderExpenses()}
+          </View>
+
+          {renderBottomNav()}
+        </>
+      )}
 
       {renderCheckoutModal()}
       {renderReceiptModal()}
@@ -1770,179 +1905,600 @@ const styles = StyleSheet.create({
     flex: 1, 
     backgroundColor: COLORS.bg,
     width: '100%',
-    maxWidth: Platform.OS === 'web' ? 480 : '100%',
-    alignSelf: 'center',
-    boxShadow: Platform.OS === 'web' ? '0 0 40px rgba(0,0,0,0.4)' : undefined
+    alignSelf: 'stretch',
+  },
+  containerDesktop: {
+    maxWidth: '100%',
   },
   loadingContainer: { flex: 1, backgroundColor: COLORS.bg, justifyContent: 'center', alignItems: 'center' },
   mainContent: { flex: 1 },
-  pageContainer: { flex: 1 },
-  
+  pageContainer: { flex: 1, paddingBottom: 16 },
+
+  // ---- RESPONSIVE DESKTOP LAYOUT ----
+  desktopLayout: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: COLORS.bg,
+  },
+
+  // Sidebar (Desktop: 220px wide, Tablet: 64px icon-only)
+  sidebar: {
+    width: 220,
+    backgroundColor: COLORS.bg2,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+    paddingTop: 20,
+    paddingHorizontal: 12,
+    flexShrink: 0,
+  },
+  sidebarTablet: {
+    width: 64,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  sidebarLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 28,
+    paddingHorizontal: 4,
+    gap: 10,
+  },
+  sidebarItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  sidebarItemActive: {
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.2)',
+  },
+  sidebarLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.muted,
+  },
+  sidebarLabelActive: {
+    color: COLORS.gold,
+    fontWeight: '800',
+  },
+
+  // Main desktop content area
+  desktopContent: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+  },
+
+
   // Global Header
-  globalHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12, backgroundColor: COLORS.bg2, borderBottomWidth: 1, borderBottomColor: COLORS.border, elevation: 4, shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.3, shadowRadius: 3, zIndex: 10 },
-  logoBox: { width: 42, height: 42, borderRadius: 12, backgroundColor: COLORS.gold, justifyContent: 'center', alignItems: 'center', marginRight: 12, elevation: 5, shadowColor: COLORS.gold, shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.5, shadowRadius: 4 },
-  logoText: { color: COLORS.white, fontSize: 22, fontWeight: '900', letterSpacing: 1.5 },
-  logoSubtitle: { color: COLORS.muted, fontSize: 10, fontWeight: 'bold', letterSpacing: 2, textTransform: 'uppercase', marginTop: 2 },
+  globalHeader: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingTop: 14, 
+    paddingBottom: 14, 
+    backgroundColor: COLORS.bg2, 
+    borderBottomWidth: 1, 
+    borderBottomColor: COLORS.border 
+  },
+  logoBox: { 
+    width: 42, 
+    height: 42, 
+    borderRadius: 14, 
+    backgroundColor: COLORS.gold, 
+    justify: 'center', 
+    alignItems: 'center', 
+    marginRight: 14,
+    boxShadow: '0 4px 16px rgba(245, 158, 11, 0.3)'
+  },
+  logoText: { color: COLORS.white, fontSize: 20, fontWeight: '900', letterSpacing: 1.2 },
+  logoSubtitle: { color: COLORS.gold, fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase', marginTop: 1 },
   
-  card: { backgroundColor: COLORS.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, marginBottom: 12, elevation: 3, shadowColor: '#000', shadowOffset: {width:0, height:2}, shadowOpacity: 0.2, shadowRadius: 4 },
+  card: { 
+    backgroundColor: COLORS.card, 
+    padding: 16, 
+    borderRadius: 16, 
+    borderWidth: 1, 
+    borderColor: COLORS.border, 
+    marginBottom: 12 
+  },
   
-  // Header
-  pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: COLORS.bg2, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  pageTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.white },
+  // Page Header (Matches localhost:3000)
+  pageHeader: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'flex-start', 
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: COLORS.bg
+  },
+  brandLabel: { 
+    fontSize: 10, 
+    fontWeight: '700', 
+    letterSpacing: 1.5, 
+    color: COLORS.gold, 
+    textTransform: 'uppercase',
+    marginBottom: 2
+  },
+  pageTitle: { fontSize: 26, fontWeight: '800', color: COLORS.text, letterSpacing: -0.5 },
+  pageSubtitle: { fontSize: 12, color: COLORS.muted, marginTop: 2 },
   
-  // Kassa Header & Search
-  kassaHeader: { padding: 16, backgroundColor: COLORS.bg2, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  searchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, borderRadius: 12, paddingHorizontal: 12, height: 48, borderWidth: 1, borderColor: COLORS.border },
-  searchInput: { flex: 1, color: COLORS.text, fontSize: 16 },
-  kassaCategories: { paddingVertical: 12, backgroundColor: COLORS.bg, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  catPill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border, marginRight: 10, flexDirection: 'row', alignItems: 'center' },
-  catPillActive: { backgroundColor: COLORS.gold, borderColor: COLORS.gold },
-  catPillText: { color: COLORS.text, fontSize: 14, fontWeight: '500' },
-  catPillTextActive: { color: COLORS.bg, fontWeight: 'bold' },
+  // Kassa Header & Search (Matches localhost:3000)
+  kassaHeader: { paddingHorizontal: 20, paddingVertical: 12, backgroundColor: COLORS.bg },
+  searchBox: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: COLORS.card, 
+    borderRadius: 16, 
+    paddingHorizontal: 14, 
+    height: 46, 
+    borderWidth: 1.5, 
+    borderColor: COLORS.border 
+  },
+  searchInput: { flex: 1, color: COLORS.text, fontSize: 14 },
+  kassaCategories: { paddingVertical: 10, backgroundColor: COLORS.bg },
+  catPill: { 
+    paddingHorizontal: 16, 
+    paddingVertical: 8, 
+    borderRadius: 999, 
+    backgroundColor: COLORS.card, 
+    borderWidth: 1, 
+    borderColor: COLORS.border, 
+    marginRight: 8, 
+    flexDirection: 'row', 
+    alignItems: 'center' 
+  },
+  catPillActive: { 
+    backgroundColor: COLORS.gold, 
+    borderColor: COLORS.gold,
+    boxShadow: '0 4px 15px rgba(245, 158, 11, 0.25)'
+  },
+  catPillText: { color: COLORS.muted, fontSize: 13, fontWeight: '600' },
+  catPillTextActive: { color: '#06101e', fontWeight: '800' },
 
   // Fast Access
-  fastAccessContainer: { backgroundColor: COLORS.bg, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  fastAccessTitle: { color: COLORS.gold, fontSize: 14, fontWeight: 'bold', marginLeft: 16, marginBottom: 8 },
-  fastAccessCard: { backgroundColor: COLORS.card, padding: 10, borderRadius: 8, marginRight: 10, width: 120, borderWidth: 1, borderColor: COLORS.border },
-  fastAccessName: { color: COLORS.white, fontSize: 13, fontWeight: '600', marginBottom: 4 },
-  fastAccessPrice: { color: COLORS.green, fontSize: 12, fontWeight: 'bold' },
+  fastAccessContainer: { backgroundColor: COLORS.bg, paddingVertical: 8 },
+  fastAccessTitle: { color: COLORS.gold, fontSize: 12, fontWeight: '800', letterSpacing: 0.5, marginLeft: 20, marginBottom: 8, textTransform: 'uppercase' },
+  fastAccessCard: { 
+    backgroundColor: COLORS.card, 
+    paddingHorizontal: 12,
+    paddingVertical: 10, 
+    borderRadius: 12, 
+    marginRight: 8, 
+    width: 125, 
+    borderWidth: 1, 
+    borderColor: COLORS.border 
+  },
+  fastAccessName: { color: COLORS.text, fontSize: 13, fontWeight: '700', marginBottom: 4 },
+  fastAccessPrice: { color: COLORS.gold, fontSize: 13, fontWeight: '800' },
 
-  // Products Grid (Kassa)
-  productsGrid: { padding: 10 },
-  productCard: { flex: 1, margin: 6, backgroundColor: COLORS.card, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: COLORS.border, minHeight: 120 },
-  productCardHeader: { flex: 1, marginBottom: 8 },
-  productCardTitle: { color: COLORS.white, fontSize: 15, fontWeight: '600', marginBottom: 4 },
-  productCardPrice: { color: COLORS.gold, fontSize: 16, fontWeight: 'bold' },
-  productCardStock: { color: COLORS.muted, fontSize: 12, marginTop: 4 },
-  badgeRed: { backgroundColor: COLORS.red + '20', alignSelf: 'flex-start', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: COLORS.red },
-  badgeText: { color: COLORS.red, fontSize: 10, fontWeight: 'bold' },
+  // Products Grid (Kassa) - Matching localhost:3000 Card Style
+  productsGrid: { paddingHorizontal: 14, paddingBottom: 16 },
+  productCard: { 
+    flex: 1, 
+    margin: 6, 
+    backgroundColor: COLORS.card, 
+    borderRadius: 16, 
+    padding: 14, 
+    borderWidth: 1, 
+    borderColor: COLORS.border, 
+    minHeight: 125,
+    justifyContent: 'space-between'
+  },
+  productCardHeader: { marginBottom: 6 },
+  productCardTitle: { color: COLORS.text, fontSize: 14, fontWeight: '700', marginBottom: 4, lineHeight: 18 },
+  productCardPrice: { color: COLORS.gold, fontSize: 15, fontWeight: '800' },
+  productCardStock: { color: COLORS.muted, fontSize: 11, marginTop: 4, fontWeight: '600' },
+  badgeRed: { backgroundColor: COLORS.red + '20', alignSelf: 'flex-start', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: COLORS.red },
+  badgeText: { color: COLORS.red, fontSize: 10, fontWeight: '700' },
 
-  // Cart Sidebar
-  cartSidebar: { flex: 1.2, backgroundColor: COLORS.bg2, borderLeftWidth: 1, borderLeftColor: COLORS.border },
-  cartTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.white, padding: 16, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  cartItem: { flexDirection: 'row', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  cartItemName: { color: COLORS.white, fontSize: 14, fontWeight: '500', marginBottom: 4 },
-  cartItemPrice: { color: COLORS.muted, fontSize: 13 },
-  qtyControls: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border },
-  qtyBtn: { padding: 8 },
-  qtyText: { color: COLORS.white, fontSize: 14, fontWeight: 'bold', minWidth: 24, textAlign: 'center' },
-  cartFooter: { padding: 16, backgroundColor: COLORS.card, borderTopWidth: 1, borderTopColor: COLORS.border },
+  // Product Row Card (Horizontal variant)
+  productRowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border
+  },
+  productIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
+  },
+  productInfo: { flex: 1 },
+  productCategory: { fontSize: 11, color: COLORS.muted, marginBottom: 2 },
+  productRight: { alignItems: 'flex-end', flexShrink: 0 },
+  stockBadge: { fontSize: 18, fontWeight: '800', color: COLORS.green },
+  stockUnit: { fontSize: 10, color: COLORS.muted, fontWeight: '500' },
+
+  // ---- CART SIDEBAR (New Design) ----
+  cartSidebar: {
+    flex: 1.2,
+    backgroundColor: COLORS.bg2,
+    borderLeftWidth: 1,
+    borderLeftColor: COLORS.border,
+    flexDirection: 'column',
+  },
+
+  // Cart Header
+  cartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.bg2,
+  },
+  cartHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cartIconBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    backgroundColor: COLORS.gold,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: 0.2,
+  },
+  cartCountBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  cartCountText: {
+    color: COLORS.gold,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
+  // Cart Empty State
+  cartEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    paddingBottom: 40,
+  },
+  cartEmptyIconWrap: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  cartEmptyTitle: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  cartEmptySubtitle: {
+    color: COLORS.muted,
+    fontSize: 12,
+  },
+
+  // Cart Item Card
+  cartItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 8,
+  },
+  cartItemNum: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  cartItemNumText: {
+    color: COLORS.gold,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  cartItemName: {
+    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  cartItemPrice: {
+    color: COLORS.muted,
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  cartItemTotal: {
+    color: COLORS.gold,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
+  // Qty Controls
+  qtyControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.bg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    flexShrink: 0,
+  },
+  qtyBtn: {
+    padding: 6,
+  },
+  qtyText: {
+    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '800',
+    minWidth: 20,
+    textAlign: 'center',
+  },
+
+  // Cart Footer
+  cartFooter: {
+    padding: 12,
+    backgroundColor: COLORS.bg2,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    gap: 8,
+  },
+  cartDivider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginBottom: 4,
+  },
+  cartSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cartSummaryLabel: {
+    color: COLORS.muted,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  cartSummaryValue: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  cartTotalValue: {
+    color: COLORS.gold,
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+  },
+  cartClearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.15)',
+  },
+  cartClearText: {
+    color: COLORS.red,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  cartCheckoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.gold,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 6,
+  },
+  cartCheckoutText: {
+    color: COLORS.bg,
+    fontSize: 13,
+    fontWeight: '800',
+    flex: 1,
+    marginLeft: 4,
+  },
+  cartCheckoutAmount: {
+    color: COLORS.bg,
+    fontSize: 13,
+    fontWeight: '900',
+  },
   cartRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  cartLabel: { color: COLORS.muted, fontSize: 16 },
-  cartValue: { color: COLORS.white, fontSize: 20, fontWeight: 'bold' },
+  cartLabel: { color: COLORS.muted, fontSize: 14, fontWeight: '600' },
+  cartValue: { color: COLORS.gold, fontSize: 20, fontWeight: '900' },
 
-  // List Items (Ombor, Kirim, Xarajat)
-  listItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, padding: 16, marginBottom: 8, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, elevation: 2, shadowColor: '#000', shadowOffset: {width:0, height:1}, shadowOpacity: 0.2, shadowRadius: 3 },
-  listIconBox: { width: 48, height: 48, borderRadius: 12, backgroundColor: COLORS.card2, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+
+  // List Items (Ombor, Kirim, Xarajat, Qarz)
+  listItem: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: COLORS.card, 
+    padding: 14, 
+    marginBottom: 10, 
+    borderRadius: 16, 
+    borderWidth: 1, 
+    borderColor: COLORS.border 
+  },
+  listIconBox: { 
+    width: 44, 
+    height: 44, 
+    borderRadius: 12, 
+    backgroundColor: COLORS.card2, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 14 
+  },
   listInfo: { flex: 1 },
-  listTitle: { color: COLORS.white, fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  listSubtitle: { color: COLORS.muted, fontSize: 13 },
-  listPrices: { alignItems: 'flex-end', marginRight: 16 },
-  listPriceSell: { color: COLORS.white, fontSize: 15, fontWeight: 'bold' },
-  listPriceCost: { color: COLORS.muted, fontSize: 12, marginTop: 2 },
-  listStockBox: { backgroundColor: COLORS.card2, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: COLORS.border, marginRight: 12, minWidth: 70, alignItems: 'center' },
-  listStock: { color: COLORS.white, fontSize: 14, fontWeight: 'bold' },
-  actionBtn: { padding: 8, marginLeft: 4, backgroundColor: COLORS.bg2, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border },
+  listTitle: { color: COLORS.text, fontSize: 15, fontWeight: '700', marginBottom: 3 },
+  listSubtitle: { color: COLORS.muted, fontSize: 12 },
+  listPrices: { alignItems: 'flex-end', marginRight: 14 },
+  listPriceSell: { color: COLORS.gold, fontSize: 15, fontWeight: '800' },
+  listPriceCost: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
+  listStockBox: { backgroundColor: COLORS.card2, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border, marginRight: 10, minWidth: 65, alignItems: 'center' },
+  listStock: { color: COLORS.green, fontSize: 14, fontWeight: '800' },
+  actionBtn: { padding: 8, marginLeft: 4, backgroundColor: COLORS.bg2, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border },
 
   // Badges
-  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, marginTop: 4, alignSelf: 'flex-end' },
-  badgeGreen: { backgroundColor: COLORS.green + '20', borderColor: COLORS.green },
-  badgeOrange: { backgroundColor: COLORS.orange + '20', borderColor: COLORS.orange },
-  badgeTextMini: { fontSize: 10, fontWeight: 'bold' },
+  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, borderWidth: 1, marginTop: 4, alignSelf: 'flex-end' },
+  badgeGreen: { backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.3)' },
+  badgeOrange: { backgroundColor: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.3)' },
+  badgeTextMini: { fontSize: 10, fontWeight: '700' },
 
-  // Stats & Cards
-  statsRow: { flexDirection: 'row', gap: 16, marginBottom: 16 },
+  // Stats & Cards (Matches localhost:3000 Stat Grid)
+  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   statsCol: { flex: 1 },
-  statCard: { backgroundColor: COLORS.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border },
-  statCardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  statIconContainer: { width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  statCardTitle: { color: COLORS.muted, fontSize: 14, flex: 1 },
-  statCardValue: { color: COLORS.white, fontSize: 24, fontWeight: 'bold' },
-  statCardSubtitle: { color: COLORS.muted, fontSize: 12, marginTop: 4 },
-  sectionTitleContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.white },
-  rankText: { fontSize: 20, fontWeight: 'bold', color: COLORS.gold, marginRight: 16, width: 24, textAlign: 'center' },
+  statCard: { backgroundColor: COLORS.card, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border },
+  statCardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  statIconContainer: { width: 34, height: 34, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  statCardTitle: { color: COLORS.muted, fontSize: 10, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase', flex: 1 },
+  statCardValue: { color: COLORS.text, fontSize: 20, fontWeight: '900' },
+  statCardSubtitle: { color: COLORS.muted, fontSize: 11, marginTop: 4 },
+  sectionTitleContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text, letterSpacing: -0.3 },
+  rankText: { fontSize: 18, fontWeight: '800', color: COLORS.gold, marginRight: 14, width: 24, textAlign: 'center' },
 
   // Chart
-  chartCard: { backgroundColor: COLORS.card, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, padding: 16, marginBottom: 24, height: 220 },
+  chartCard: { backgroundColor: COLORS.card, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border, padding: 16, marginBottom: 20, height: 220 },
   chartScroll: { alignItems: 'flex-end', paddingBottom: 10 },
   barContainer: { alignItems: 'center', width: 40, marginRight: 12 },
-  barTrack: { height: 120, width: 24, backgroundColor: COLORS.bg2, borderRadius: 4, justifyContent: 'flex-end', overflow: 'hidden', marginBottom: 8 },
-  barFill: { width: '100%', backgroundColor: COLORS.blue, borderRadius: 4 },
-  barLabel: { color: COLORS.muted, fontSize: 10 },
+  barTrack: { height: 120, width: 24, backgroundColor: COLORS.bg2, borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden', marginBottom: 8 },
+  barFill: { width: '100%', backgroundColor: COLORS.blue, borderRadius: 6 },
+  barLabel: { color: COLORS.muted, fontSize: 10, fontWeight: '600' },
   barTooltip: { position: 'absolute', top: -20, width: 60, alignItems: 'center' },
-  barTooltipText: { color: COLORS.white, fontSize: 9, opacity: 0.7 },
+  barTooltipText: { color: COLORS.text, fontSize: 9, opacity: 0.7 },
 
-  // Bottom Nav
-  bottomNav: { flexDirection: 'row', backgroundColor: COLORS.bg2, borderTopWidth: 1, borderTopColor: COLORS.border, paddingBottom: Platform.OS === 'ios' ? 20 : 0 },
-  navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12 },
-  navText: { fontSize: 11, color: COLORS.muted, marginTop: 4, fontWeight: '500' },
-  navTextActive: { color: COLORS.gold, fontWeight: 'bold' },
+  // Bottom Navbar (Matches localhost:3000 Navbar Style)
+  bottomNav: { 
+    flexDirection: 'row', 
+    backgroundColor: COLORS.bg2, 
+    borderTopWidth: 1, 
+    borderTopColor: COLORS.border, 
+    height: 72,
+    alignItems: 'center',
+    justify: 'space-around',
+    paddingHorizontal: 6,
+    paddingBottom: Platform.OS === 'ios' ? 16 : 0
+  },
+  navItem: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 12
+  },
+  navItemActive: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.2)'
+  },
+  navText: { fontSize: 10, color: COLORS.muted, marginTop: 3, fontWeight: '600' },
+  navTextActive: { color: COLORS.gold, fontWeight: '800' },
 
-  // Modals Shared
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 16 },
-  modalContent: { backgroundColor: COLORS.bg, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border, overflow: 'hidden' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: COLORS.border, backgroundColor: COLORS.bg2 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.white },
-  modalBody: { padding: 16, maxHeight: height * 0.7 },
-  modalFooter: { padding: 16, borderTopWidth: 1, borderTopColor: COLORS.border, backgroundColor: COLORS.bg2 },
+  // Modals Shared (Matches localhost:3000 Modal Overlay)
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  modalContent: { backgroundColor: COLORS.bg2, borderRadius: 20, borderWidth: 1, borderColor: COLORS.border, overflow: 'hidden', width: '100%', maxWidth: 440 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, borderBottomWidth: 1, borderBottomColor: COLORS.border, backgroundColor: COLORS.bg2 },
+  modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
+  modalBody: { padding: 18, maxHeight: height * 0.7 },
+  modalFooter: { padding: 18, borderTopWidth: 1, borderTopColor: COLORS.border, backgroundColor: COLORS.bg2 },
   
   // Forms & Inputs
-  inputLabel: { color: COLORS.muted, fontSize: 13, marginBottom: 8, fontWeight: '500' },
-  input: { backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 12, color: COLORS.white, fontSize: 15, marginBottom: 16 },
-  pickerRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  unitBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: COLORS.card, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border },
-  unitBtnActive: { backgroundColor: COLORS.blue + '20', borderColor: COLORS.blue },
-  unitText: { color: COLORS.text, fontSize: 14 },
-  unitTextActive: { color: COLORS.blue, fontWeight: 'bold' },
-  modalCatBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border, marginRight: 8 },
-  modalCatText: { color: COLORS.text, fontSize: 14 },
+  inputLabel: { color: COLORS.muted, fontSize: 12, marginBottom: 6, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
+  input: { backgroundColor: COLORS.card, borderWidth: 1.5, borderColor: COLORS.border, borderRadius: 12, padding: 12, color: COLORS.text, fontSize: 14, marginBottom: 14 },
+  pickerRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
+  unitBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: COLORS.card, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border },
+  unitBtnActive: { backgroundColor: 'rgba(59, 130, 246, 0.15)', borderColor: COLORS.blue },
+  unitText: { color: COLORS.text, fontSize: 13, fontWeight: '600' },
+  unitTextActive: { color: COLORS.blue, fontWeight: '800' },
+  modalCatBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border, marginRight: 8 },
+  modalCatText: { color: COLORS.text, fontSize: 13 },
 
   // Checkout specific
-  summaryBox: { backgroundColor: COLORS.card, padding: 16, borderRadius: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: COLORS.border },
-  summaryLabel: { color: COLORS.muted, fontSize: 16 },
-  summaryValue: { color: COLORS.white, fontSize: 20, fontWeight: 'bold' },
-  paymentTypeRow: { flexDirection: 'row', gap: 10 },
-  paymentTypeBtn: { flex: 1, paddingVertical: 12, paddingHorizontal: 8, alignItems: 'center', backgroundColor: COLORS.card, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border },
+  summaryBox: { backgroundColor: COLORS.card, padding: 16, borderRadius: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: COLORS.border },
+  summaryLabel: { color: COLORS.muted, fontSize: 14, fontWeight: '600' },
+  summaryValue: { color: COLORS.gold, fontSize: 22, fontWeight: '900' },
+  paymentTypeRow: { flexDirection: 'row', gap: 8 },
+  paymentTypeBtn: { flex: 1, paddingVertical: 12, paddingHorizontal: 6, alignItems: 'center', backgroundColor: COLORS.card, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border },
   paymentTypeBtnActive: { backgroundColor: COLORS.gold, borderColor: COLORS.gold },
-  paymentTypeText: { color: COLORS.text, fontSize: 13, marginTop: 6, textAlign: 'center' },
-  paymentTypeTextActive: { color: COLORS.bg, fontWeight: 'bold' },
+  paymentTypeText: { color: COLORS.text, fontSize: 12, marginTop: 4, textAlign: 'center', fontWeight: '600' },
+  paymentTypeTextActive: { color: '#06101e', fontWeight: '800' },
   
   presetsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  presetBtn: { backgroundColor: COLORS.card2, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: COLORS.border },
-  presetText: { color: COLORS.text, fontSize: 12 },
-  changeBoxGreen: { backgroundColor: COLORS.green + '20', borderColor: COLORS.green, borderWidth: 1, padding: 16, borderRadius: 8, alignItems: 'center', marginVertical: 10 },
-  changeBoxRed: { backgroundColor: COLORS.red + '20', borderColor: COLORS.red, borderWidth: 1, padding: 16, borderRadius: 8, alignItems: 'center', marginVertical: 10 },
-  changeBoxText: { color: COLORS.white, fontSize: 18, fontWeight: 'bold' },
+  presetBtn: { backgroundColor: COLORS.card2, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border },
+  presetText: { color: COLORS.text, fontSize: 12, fontWeight: '600' },
+  changeBoxGreen: { backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: COLORS.green, borderWidth: 1, padding: 14, borderRadius: 12, alignItems: 'center', marginVertical: 10 },
+  changeBoxRed: { backgroundColor: 'rgba(239, 68, 68, 0.12)', borderColor: COLORS.red, borderWidth: 1, padding: 14, borderRadius: 12, alignItems: 'center', marginVertical: 10 },
+  changeBoxText: { color: COLORS.text, fontSize: 16, fontWeight: '800' },
 
   // Margins (Ombor)
-  marginBadge: { flexDirection: 'row', alignItems: 'center', padding: 10, borderRadius: 8, borderWidth: 1, marginBottom: 16 },
-  marginGreen: { backgroundColor: COLORS.green + '15', borderColor: COLORS.green },
-  marginOrange: { backgroundColor: COLORS.orange + '15', borderColor: COLORS.orange },
-  marginText: { fontSize: 14, fontWeight: 'bold', marginLeft: 8 },
+  marginBadge: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12, borderWidth: 1, marginBottom: 14 },
+  marginGreen: { backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: COLORS.green },
+  marginOrange: { backgroundColor: 'rgba(245, 158, 11, 0.12)', borderColor: COLORS.gold },
+  marginText: { fontSize: 13, fontWeight: '800', marginLeft: 8 },
 
   // Receipt
-  receiptPaper: { backgroundColor: '#F8F9FA', padding: 24, borderRadius: 12, width: width * 0.85, maxWidth: 400 },
-  receiptLogo: { width: 64, height: 64, borderRadius: 32, backgroundColor: COLORS.gold, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  receiptTitle: { fontSize: 24, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
-  receiptSubtitle: { fontSize: 16, color: '#4B5563', marginBottom: 8 },
-  receiptDate: { fontSize: 14, color: '#6B7280' },
-  receiptDivider: { height: 1, backgroundColor: '#E5E7EB', borderStyle: 'dashed', marginVertical: 16 },
-  receiptItem: { marginBottom: 12 },
-  receiptItemName: { fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 4 },
+  receiptPaper: { backgroundColor: '#F8F9FA', padding: 24, borderRadius: 16, width: width * 0.85, maxWidth: 400 },
+  receiptLogo: { width: 60, height: 60, borderRadius: 30, backgroundColor: COLORS.gold, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  receiptTitle: { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 4 },
+  receiptSubtitle: { fontSize: 15, color: '#4B5563', marginBottom: 8 },
+  receiptDate: { fontSize: 13, color: '#6B7280' },
+  receiptDivider: { height: 1, backgroundColor: '#E5E7EB', borderStyle: 'dashed', marginVertical: 14 },
+  receiptItem: { marginBottom: 10 },
+  receiptItemName: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 2 },
   receiptItemRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  receiptItemQty: { fontSize: 14, color: '#4B5563' },
-  receiptItemTotal: { fontSize: 15, fontWeight: '600', color: '#111827' },
-  receiptTotalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  receiptTotalLabel: { fontSize: 16, color: '#4B5563', fontWeight: '500' },
-  receiptFinalLabel: { fontSize: 18, color: '#111827', fontWeight: 'bold' },
-  receiptFinalValue: { fontSize: 24, color: '#111827', fontWeight: 'bold' },
+  receiptItemQty: { fontSize: 13, color: '#4B5563' },
+  receiptItemTotal: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  receiptTotalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  receiptTotalLabel: { fontSize: 15, color: '#4B5563', fontWeight: '600' },
+  receiptFinalLabel: { fontSize: 17, color: '#111827', fontWeight: '800' },
+  receiptFinalValue: { fontSize: 22, color: '#111827', fontWeight: '900' },
 
   // Shared Components
-  emptyState: { alignItems: 'center', justifyContent: 'center', padding: 40 },
-  emptyStateIcon: { width: 96, height: 96, borderRadius: 48, backgroundColor: COLORS.card, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  emptyStateTitle: { color: COLORS.white, fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
-  emptyStateMessage: { color: COLORS.muted, fontSize: 14, textAlign: 'center' },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 8, minWidth: 120, elevation: 3, shadowColor: '#000', shadowOffset: {width:0, height:2}, shadowOpacity: 0.25, shadowRadius: 3 },
-  primaryBtnText: { fontSize: 15, fontWeight: 'bold' }
+  emptyState: { alignItems: 'center', justifyContent: 'center', padding: 36 },
+  emptyStateIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.card, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  emptyStateTitle: { color: COLORS.text, fontSize: 16, fontWeight: '800', marginBottom: 6 },
+  emptyStateMessage: { color: COLORS.muted, fontSize: 13, textAlign: 'center' },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 18, borderRadius: 14, minWidth: 120, boxShadow: '0 4px 16px rgba(245, 158, 11, 0.25)' },
+  primaryBtnText: { fontSize: 14, fontWeight: '800' }
 });
